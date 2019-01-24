@@ -111,6 +111,7 @@ class App extends Component {
     const makeFloor = () => ({
       up: false,
       down: false,
+      dropoff: false,
     });
 
     this.state = {
@@ -142,6 +143,10 @@ class App extends Component {
     this.setState(R.assocPath(['requests', floor, 'down'], true));
   }
 
+  requestDropoff = floor => {
+    this.setState(R.assocPath(['requests', floor, 'dropoff'], true));
+  }
+
   render() {
     return (
       <Container>
@@ -160,18 +165,23 @@ class App extends Component {
           <div>
             <Button onClick={this.goUp}>Up</Button>
             <Button onClick={this.goDown}>Down</Button>
+            {[5,4,3,2,1].map(floor => (
+              <Button key={floor} onClick={() => this.requestDropoff(floor)}>{floor}</Button>
+            ))}
           </div>
           {
             R.pipe(
-              R.values,
-              R.map(({ up, down }) => {
+              R.addIndex(R.map)(({ up, down, dropoff }, index) => {
                 return (
-                  <div>
+                  <div key={index}>
                     {up ? "Up" : '--'} |
                     {down ? "Down" : '--'}
+                    {dropoff ? "Dropoff" : '--'}
                   </div>
                 )
               }),
+              R.values,
+              R.reverse,
             )(this.state.requests)}
         </ControlPanel>
       </Container>
