@@ -107,8 +107,18 @@ const Elevator = styled.div`
 class App extends Component {
   constructor(props) {
     super(props);
+
+    const makeFloor = () => ({
+      up: false,
+      down: false,
+    });
+
     this.state = {
       floor: 1,
+      requests: R.pipe(
+        R.map(floor => [floor, makeFloor()]),
+        R.fromPairs,
+      )([1,2,3,4,5]),
     };
   }
 
@@ -123,7 +133,15 @@ class App extends Component {
       floor: R.clamp(1, 5, state.floor - 1),
     }));
   }
-  
+
+  requestUp = floor => {
+    this.setState(R.assocPath(['requests', floor, 'up'], true));
+  }
+
+  requestDown = floor => {
+    this.setState(R.assocPath(['requests', floor, 'down'], true));
+  }
+
   render() {
     return (
       <Container>
@@ -132,15 +150,29 @@ class App extends Component {
           {[1,2,3,4,5].map(floor => (
             <Floor key={floor}>
               <FloorButtons>
-                <Button>Up</Button>
-                <Button>Down</Button>
+                <Button onClick={() => this.requestUp(floor)}>Up</Button>
+                <Button onClick={() => this.requestDown(floor)}>Down</Button>
               </FloorButtons>
             </Floor>
           ))}
         </Building>
         <ControlPanel>
-          <Button onClick={this.goUp}>Up</Button>
-          <Button onClick={this.goDown}>Down</Button>
+          <div>
+            <Button onClick={this.goUp}>Up</Button>
+            <Button onClick={this.goDown}>Down</Button>
+          </div>
+          {
+            R.pipe(
+              R.values,
+              R.map(({ up, down }) => {
+                return (
+                  <div>
+                    {up ? "Up" : '--'} |
+                    {down ? "Down" : '--'}
+                  </div>
+                )
+              }),
+            )(this.state.requests)}
         </ControlPanel>
       </Container>
     );
