@@ -34,6 +34,7 @@ const Button = styled.div`
   margin-bottom: 8px;
   text-align: center;
   color: black;
+  user-select: none;
 
   &:last-child {
     margin-bottom: 0;
@@ -99,7 +100,7 @@ const Elevator = styled.div`
   position: absolute;
   left: 50%;
   transform: translateX(-50%) translateY(${({ floor }) => 10 + (5-floor) * (200+10)}px);
-  transition: transform 1s;
+  transition: transform 0.5s;
   z-index: 20;
 `;
 
