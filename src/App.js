@@ -99,39 +99,41 @@ const Elevator = styled.div`
   border-radius: 10px;
   position: absolute;
   left: 50%;
-  transform: translateX(-50%) translateY(${({ floor }) => 10 + (5-floor) * (200+10)}px);
+  transform: translateX(-50%) translateY(${({ floor }) => 10 + (4-floor) * (200+10)}px);
   transition: transform 0.5s;
   z-index: 20;
 `;
+
+const makeFloor = floor => ({
+  up: false,
+  down: false,
+  dropoff: false,
+  floor,
+});
+
 
 class App extends Component {
   constructor(props) {
     super(props);
 
-    const makeFloor = () => ({
-      up: false,
-      down: false,
-      dropoff: false,
-    });
-
     this.state = {
-      floor: 1,
+      floor: 0,
+      goingUp: true,
       requests: R.pipe(
-        R.map(floor => [floor, makeFloor()]),
-        R.fromPairs,
-      )([1,2,3,4,5]),
+        R.map(floor => makeFloor(floor)),
+      )(R.range(0, 5)),
     };
   }
 
   goUp = () => {
     this.setState(state => ({
-      floor: R.clamp(1, 5, state.floor + 1),
+      floor: R.clamp(0, 4, state.floor + 1),
     }));
   }
 
   goDown = () => {
     this.setState(state => ({
-      floor: R.clamp(1, 5, state.floor - 1),
+      floor: R.clamp(0, 4, state.floor - 1),
     }));
   }
 
@@ -147,13 +149,57 @@ class App extends Component {
     this.setState(R.assocPath(['requests', floor, 'dropoff'], true));
   }
 
+  getRemainingStops = state => {
+    const range = state.goingUp ? R.range(state.floor + 1, 5) : R.range(0, state.floor);
+    const allFloors = R.compose(R.values, R.pickAll)(range, state.requests);
+    const floors = R.pipe(
+      R.reject(R.pipe(
+        R.pick([state.goingUp ? 'up' : 'down', 'dropoff']),
+        R.values,
+        R.all(R.equals(false))
+      )),
+      R.sortBy(R.prop('floor')),
+    )(allFloors);
+
+    if(!state.goingUp) {
+      return R.reverse(floors);
+    }
+    return floors;
+  };
+
+  goToNextFloor = () => {
+    this.setState(state => {
+      const remaniningStops = this.getRemainingStops(state);
+      if (remaniningStops.length === 0) {
+        const newRemainingStops = this.getRemainingStops(R.assoc('goingUp', !state.goingUp)(state));
+        if(newRemainingStops.length === 0) {
+          // No more remaning requests
+          return {};
+        }
+        const newFloor = newRemainingStops[0].floor;
+        return {
+          goingUp: !state.goingUp,
+          floor: newFloor,
+          requests: R.update(newFloor, makeFloor(newFloor))(state.requests),
+        };
+      } else {
+        const newFloor = remaniningStops[0].floor;
+        return {
+          floor: newFloor,
+          requests: R.update(newFloor, makeFloor(newFloor))(state.requests),
+        }
+      }
+    })
+  }
+
   render() {
     return (
       <Container>
         <Building>
           <Elevator floor={this.state.floor}></Elevator>
-          {[1,2,3,4,5].map(floor => (
+          {[4,3,2,1,0].map(floor => (
             <Floor key={floor}>
+              {floor}
               <FloorButtons>
                 <Button onClick={() => this.requestUp(floor)}>Up</Button>
                 <Button onClick={() => this.requestDown(floor)}>Down</Button>
@@ -165,17 +211,19 @@ class App extends Component {
           <div>
             <Button onClick={this.goUp}>Up</Button>
             <Button onClick={this.goDown}>Down</Button>
-            {[5,4,3,2,1].map(floor => (
+            {[4,3,2,1,0].map(floor => (
               <Button key={floor} onClick={() => this.requestDropoff(floor)}>{floor}</Button>
             ))}
+            <Button onClick={this.goToNextFloor}>TEST</Button>
           </div>
           {
             R.pipe(
               R.addIndex(R.map)(({ up, down, dropoff }, index) => {
                 return (
                   <div key={index}>
+                    {index}
                     {up ? "Up" : '--'} |
-                    {down ? "Down" : '--'}
+                    {down ? "Down" : '--'} |
                     {dropoff ? "Dropoff" : '--'}
                   </div>
                 )
