@@ -1,3 +1,79 @@
+## Elevator internal state:
+* Floor position
+* Door status
+* Outside floor indicator state
+* Outside direction indicator state
+* Cabin floor indicator state
+* Cabin direction indicator state
+* Call button light state
+* Floor request button light state
+
+{
+  floor: Int,
+  outside: [
+    { floor: Int, up: Bool, down: Bool, upButton: Bool, downButton: Bool, doorsOpen: Bool },
+  ],
+  cabin: {
+    floor: Int,
+    up: Bool,
+    down: Bool,
+    doorsOpen: Bool,
+    buttons: [
+      { lightOn: Bool },
+    ],
+  },
+}
+
+## Events
+* Floor call button pressed
+    { action: "FLOOR_CALL", floor: Int, up: Bool, down: Bool }
+* Cabin request button pressed
+    { action: "CABIN_REQUEST", floor: Int }
+* Door open button pressed
+    { action: "DOOR_OPEN_REQUEST" }
+* Door closed button pressed
+    { action: "DOOR_CLOSE_REQUEST" }
+* Floor arrival
+    { action: "ARRIVED_AT_FLOOR", floor: Int }
+* Door closed
+    { action: "DOOR_CLOSED" }
+* Door opened
+    { action: "DOOR_OPENED" }
+
+## Commands
+* # Go to floor
+    goToFloor(floor: Int)
+
+* # Open floor doors
+    openFloorDoors(floor: Int)
+
+* # Close floor doors
+    closeFloorDoors(floor: Int)
+
+* # Open cabin doors
+    openCabinDoors()
+
+* # Close cabin doors
+    closeCabinDoors()
+
+* # Set outside floor indicator
+    setOutsideFloorIndicator(floor: Int, value: Int)
+
+* # Set outside direction indicator
+    setOutsideDirectionIndicator(floor: Int, up: Bool, down: Bool)
+
+* # Set outside button lights
+    setOutsideButtonLights(floor: Int, up: Bool, down: Bool)
+
+* # Set cabin floor indicator
+    setCabinFloorIndicator(value: Int)
+
+* # Set cabin direction indicator
+    setCabinDirectionIndicator(up: Bool, down: Bool)
+
+* # Set cabin request button light
+    setCabinRequestButtonLight(floor: Int, value: Bool)
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts

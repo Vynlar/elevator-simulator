@@ -4,6 +4,9 @@ import styled from '@emotion/styled';
 import 'normalize.css';
 import * as R from 'ramda';
 
+import Elevator from './Elevator';
+import Controller from './Controller';
+
 const Container = styled.div`
   display: flex;
   flex-direction: column;
@@ -92,7 +95,7 @@ const FloorButtons = styled.div`
   left: 120px;
 `;
 
-const Elevator = styled.div`
+const Cabin = styled.div`
   height: 180px;
   width: 120px;
   background: #eeeeee;
@@ -111,92 +114,16 @@ const makeFloor = floor => ({
   floor,
 });
 
+const controller = new Controller();
 
 class App extends Component {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      floor: 0,
-      goingUp: true,
-      requests: R.pipe(
-        R.map(floor => makeFloor(floor)),
-      )(R.range(0, 5)),
-    };
-  }
-
-  goUp = () => {
-    this.setState(state => ({
-      floor: R.clamp(0, 4, state.floor + 1),
-    }));
-  }
-
-  goDown = () => {
-    this.setState(state => ({
-      floor: R.clamp(0, 4, state.floor - 1),
-    }));
-  }
-
-  requestUp = floor => {
-    this.setState(R.assocPath(['requests', floor, 'up'], true));
-  }
-
-  requestDown = floor => {
-    this.setState(R.assocPath(['requests', floor, 'down'], true));
-  }
-
-  requestDropoff = floor => {
-    this.setState(R.assocPath(['requests', floor, 'dropoff'], true));
-  }
-
-  getRemainingStops = state => {
-    const range = state.goingUp ? R.range(state.floor + 1, 5) : R.range(0, state.floor);
-    const allFloors = R.compose(R.values, R.pickAll)(range, state.requests);
-    const floors = R.pipe(
-      R.reject(R.pipe(
-        R.pick([state.goingUp ? 'up' : 'down', 'dropoff']),
-        R.values,
-        R.all(R.equals(false))
-      )),
-      R.sortBy(R.prop('floor')),
-    )(allFloors);
-
-    if(!state.goingUp) {
-      return R.reverse(floors);
-    }
-    return floors;
-  };
-
-  goToNextFloor = () => {
-    this.setState(state => {
-      const remaniningStops = this.getRemainingStops(state);
-      if (remaniningStops.length === 0) {
-        const newRemainingStops = this.getRemainingStops(R.assoc('goingUp', !state.goingUp)(state));
-        if(newRemainingStops.length === 0) {
-          // No more remaning requests
-          return {};
-        }
-        const newFloor = newRemainingStops[0].floor;
-        return {
-          goingUp: !state.goingUp,
-          floor: newFloor,
-          requests: R.update(newFloor, makeFloor(newFloor))(state.requests),
-        };
-      } else {
-        const newFloor = remaniningStops[0].floor;
-        return {
-          floor: newFloor,
-          requests: R.update(newFloor, makeFloor(newFloor))(state.requests),
-        }
-      }
-    })
-  }
-
   render() {
+    return <Elevator controller={controller} />
+    /*
     return (
       <Container>
         <Building>
-          <Elevator floor={this.state.floor}></Elevator>
+          <Cabin floor={this.state.floor}></Cabin>
           {[4,3,2,1,0].map(floor => (
             <Floor key={floor}>
               {floor}
@@ -234,6 +161,7 @@ class App extends Component {
         </ControlPanel>
       </Container>
     );
+    */
   }
 }
 
