@@ -171,6 +171,19 @@ class Elevator extends Component {
       console.log(`Setting cabin request button light for floor ${floor} to ${value}`);
       self.setState(R.assocPath(['cabin', 'buttons', floor, 'lightOn'], value),);
     },
+
+    /*
+       Getters for all the internal elevator state
+    */
+    getCurrentFloor: () => this.state.floor,
+    getOutsideFloorIndicator: (floor) => this.state.outside[floor].floor,
+    getOutsideFloorDirectionIndicators: (floor) => R.pick(['up', 'down'], this.state.outside[floor]),
+    getOutsideButtonIndicators: (floor) => R.pick(['upButton', 'downButton'], this.state.outside[floor]),
+    isOutsideDoorOpen: floor => this.state.outside[floor].doorsOpen,
+    getCabinFloorIndicator: () => this.state.cabin.floor,
+    getCabinDirectionIndicator: () => R.pick(['up', 'down'], this.state.cabin),
+    areCabinDoorsOpen: () => this.state.cabin.doorsOpen,
+    getCabinButtonLightStatus: (floor) => this.state.cabin.buttons[floor].lightOn,
   }))(this)
 
   render() {
