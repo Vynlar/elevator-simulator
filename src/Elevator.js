@@ -49,7 +49,7 @@ class Elevator extends Component {
       console.log(`Going to floor ${floor}`);
       setTimeout(() => {
         console.log(`Arrived at floor ${floor}`);
-        this.props.controller.onFloorArrival();
+        self.props.controller.onFloorArrival(self.commands);
         self.setState({
           floor
         });
@@ -62,7 +62,7 @@ class Elevator extends Component {
       console.log('Opening cabin doors');
       setTimeout(() => {
         console.log('Cabin doors opened');
-        this.props.controller.onCabinDoorsOpened();
+        self.props.controller.onCabinDoorsOpened(self.commands);
         self.setState(R.assocPath(['cabin', 'doorsOpen'], true));
       }, second * 1)
     },
@@ -73,7 +73,7 @@ class Elevator extends Component {
       console.log('Closing cabin doors');
       setTimeout(() => {
         console.log('Cabin doors closed');
-        this.props.controller.onCabinDoorsClosed();
+        self.props.controller.onCabinDoorsClosed(self.commands);
         self.setState(R.assocPath(['cabin', 'doorsOpen'], false));
       }, second * 1)
     },
@@ -85,7 +85,7 @@ class Elevator extends Component {
       console.log(`Opening floor doors on floor ${floor}`);
       setTimeout(() => {
         console.log(`Floor doors on floor ${floor} opened`);
-        this.props.controller.onFloorDoorsOpened(floor);
+        self.props.controller.onFloorDoorsOpened(self.commands, floor);
         self.setState(R.assocPath(['outside', floor, 'doorsOpen'], true));
       }, second * 1)
     },
@@ -97,7 +97,7 @@ class Elevator extends Component {
       console.log(`Closing floor doors on floor ${floor}`);
       setTimeout(() => {
         console.log(`Floor doors on floor ${floor} closed`);
-        this.props.controller.onFloorDoorsClosed(floor);
+        self.props.controller.onFloorDoorsClosed(self.commands, floor);
         self.setState(R.assocPath(['outside', floor, 'doorsOpen'], false));
       }, second * 1)
     },
@@ -175,15 +175,15 @@ class Elevator extends Component {
     /*
        Getters for all the internal elevator state
     */
-    getCurrentFloor: () => this.state.floor,
-    getOutsideFloorIndicator: (floor) => this.state.outside[floor].floor,
-    getOutsideFloorDirectionIndicators: (floor) => R.pick(['up', 'down'], this.state.outside[floor]),
-    getOutsideButtonIndicators: (floor) => R.pick(['upButton', 'downButton'], this.state.outside[floor]),
-    isOutsideDoorOpen: floor => this.state.outside[floor].doorsOpen,
-    getCabinFloorIndicator: () => this.state.cabin.floor,
-    getCabinDirectionIndicator: () => R.pick(['up', 'down'], this.state.cabin),
-    areCabinDoorsOpen: () => this.state.cabin.doorsOpen,
-    getCabinButtonLightStatus: (floor) => this.state.cabin.buttons[floor].lightOn,
+    getCurrentFloor: () => self.state.floor,
+    getOutsideFloorIndicator: (floor) => self.state.outside[floor].floor,
+    getOutsideFloorDirectionIndicators: (floor) => R.pick(['up', 'down'], self.state.outside[floor]),
+    getOutsideButtonIndicators: (floor) => R.pick(['upButton', 'downButton'], self.state.outside[floor]),
+    isOutsideDoorOpen: floor => self.state.outside[floor].doorsOpen,
+    getCabinFloorIndicator: () => self.state.cabin.floor,
+    getCabinDirectionIndicator: () => R.pick(['up', 'down'], self.state.cabin),
+    areCabinDoorsOpen: () => self.state.cabin.doorsOpen,
+    getCabinButtonLightStatus: (floor) => self.state.cabin.buttons[floor].lightOn,
   }))(this)
 
   render() {
