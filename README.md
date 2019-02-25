@@ -76,6 +76,15 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## How to start
+
+This is useful for being able to use this project and do the initial commands given in "Available Scripts".
+
+1.) Install npm. For Red Hat linux, I ran "sudo yum install npm".
+
+2.) Run "npm install". You are now ready to run 'npm start', 'npm test', etc.
+
+
 ## Available Scripts
 
 In the project directory, you can run:
