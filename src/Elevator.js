@@ -2,14 +2,12 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import * as R from 'ramda';
 
-import Controller from './Controller';
-
 const numFloors = 5;
 const second = 500;
 
 class Elevator extends Component {
   static propTypes = {
-    controller: PropTypes.instanceOf(Controller),
+    listeners: PropTypes.objectOf(PropTypes.func),
   }
 
   state = {
@@ -49,7 +47,7 @@ class Elevator extends Component {
       console.log(`Going to floor ${floor}`);
       setTimeout(() => {
         console.log(`Arrived at floor ${floor}`);
-        self.props.controller.onFloorArrival(self.commands);
+        self.props.listeners.onFloorArrival(self.commands);
         self.setState({
           floor
         });
@@ -62,7 +60,7 @@ class Elevator extends Component {
       console.log('Opening cabin doors');
       setTimeout(() => {
         console.log('Cabin doors opened');
-        self.props.controller.onCabinDoorsOpened(self.commands);
+        self.props.listeners.onCabinDoorsOpened(self.commands);
         self.setState(R.assocPath(['cabin', 'doorsOpen'], true));
       }, second * 1)
     },
@@ -73,7 +71,7 @@ class Elevator extends Component {
       console.log('Closing cabin doors');
       setTimeout(() => {
         console.log('Cabin doors closed');
-        self.props.controller.onCabinDoorsClosed(self.commands);
+        self.props.listeners.onCabinDoorsClosed(self.commands);
         self.setState(R.assocPath(['cabin', 'doorsOpen'], false));
       }, second * 1)
     },
@@ -85,7 +83,7 @@ class Elevator extends Component {
       console.log(`Opening floor doors on floor ${floor}`);
       setTimeout(() => {
         console.log(`Floor doors on floor ${floor} opened`);
-        self.props.controller.onFloorDoorsOpened(self.commands, floor);
+        self.props.listeners.onFloorDoorsOpened(self.commands, floor);
         self.setState(R.assocPath(['outside', floor, 'doorsOpen'], true));
       }, second * 1)
     },
@@ -97,7 +95,7 @@ class Elevator extends Component {
       console.log(`Closing floor doors on floor ${floor}`);
       setTimeout(() => {
         console.log(`Floor doors on floor ${floor} closed`);
-        self.props.controller.onFloorDoorsClosed(self.commands, floor);
+        self.props.listeners.onFloorDoorsClosed(self.commands, floor);
         self.setState(R.assocPath(['outside', floor, 'doorsOpen'], false));
       }, second * 1)
     },

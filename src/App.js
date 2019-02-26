@@ -114,11 +114,9 @@ const makeFloor = floor => ({
   floor,
 });
 
-const controller = new Controller();
-
 class App extends Component {
   render() {
-    return <Elevator controller={controller} />
+    return <Controller shell={Elevator} />
     /*
     return (
       <Container>
