@@ -67,7 +67,6 @@ export default class Controller extends Component {
     * @returns {void}
     */
     onCabinDoorsClosed: (commands) => {
-      console.log('closed')
     },
 
     /**
@@ -84,7 +83,7 @@ export default class Controller extends Component {
     * @param {number} floor The index of the floor whose doors opened
     * @returns {void}
     */
-    onFloorDoorsOpened: (commands) => {
+    onFloorDoorsOpened: (commands, floor) => {
     },
 
     /**
@@ -93,7 +92,16 @@ export default class Controller extends Component {
     * @param {number} floor The index of the floor whose doors closed
     * @returns {void}
     */
-    onFloorDoorsClosed: (commands) => {
+    onFloorDoorsClosed: (commands, floor) => {
+    },
+
+    /**
+     * onFireAlarm
+     * Called once when the fire alarm is first triggered
+     * @param {object} commands The object of command functions to control the elevator (see ./Elevator.js for documentation)
+     * @returns {void}
+     */
+    onFireAlarm: (commands) => {
     },
   })).bind(this)();
 
