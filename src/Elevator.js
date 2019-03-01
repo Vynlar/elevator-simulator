@@ -1,9 +1,16 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import * as R from 'ramda';
+import GraphicalElevator from './GraphicalElevator';
 
 const numFloors = 5;
 const second = 500;
+
+export const FIRE_KEY = {
+  OFF: 'OFF',
+  ON: 'ON',
+  RESET: 'RESET',
+}
 
 class Elevator extends Component {
   static propTypes = {
@@ -28,6 +35,7 @@ class Elevator extends Component {
       up: false,
       down: false,
       doorsOpen: false,
+      fireKeyPosition: FIRE_KEY.OFF,
       buttons: R.pipe(
         R.range,
         R.map(floor => ({
@@ -182,11 +190,14 @@ class Elevator extends Component {
     getCabinDirectionIndicator: () => R.pick(['up', 'down'], self.state.cabin),
     areCabinDoorsOpen: () => self.state.cabin.doorsOpen,
     getCabinButtonLightStatus: (floor) => self.state.cabin.buttons[floor].lightOn,
+    getFireKeyPosition: () => self.state.cabin.fireKeyPosition,
+
   }))(this)
 
   render() {
     return (
       <div>
+          <GraphicalElevator numFloors={numFloors} />
           <div>
               <h2>General</h2>
               <div>
@@ -206,6 +217,9 @@ class Elevator extends Component {
               </div>
               <div>
                   Down: {this.state.cabin.down ? 'ON' : 'OFF' }
+              </div>
+              <div>
+                  Fire key position: {this.state.cabin.fireKeyPosition}
               </div>
               <h3>Buttons</h3>
               <div>
