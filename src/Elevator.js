@@ -89,7 +89,10 @@ class Elevator extends Component {
           newFloor = floor;
           return R.assocPath(['outside', floor, 'doorsOpen'], isDoorsOpen)(state);
         }, () => {
-          self.props.listeners.onFloorDoorsOpened(self.commands, newFloor);
+          if ( self.state.outside[newFloor].doorsOpen )
+            self.props.listeners.onFloorDoorsOpened(self.commands, newFloor);
+          else
+            self.props.listeners.onFloorDoorsClosed(self.commands, newFloor);
         });
       }, second * 1);
     },

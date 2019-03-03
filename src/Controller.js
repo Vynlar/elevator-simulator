@@ -10,12 +10,48 @@ export default class Controller extends Component {
    * Do not use assignment! e.x. this.state.foo = 'bar'; <-- this will break everything
    */
   state = {
+    queue: R.pipe(
+      R.range,
+      R.map(() => ({up: false, down: false, undirected: false}))
+    )(0, numFloors),
+    isGoingUp: false,
+    moving: false,
+    idle: true,
+
     put: 'whatever state you want here',
     itCanBeNumbers: 7,
     orEvenOtherObjects: {
       like: 'this!',
     },
     arraysAreCoolToo: [ 1, 2, 3, 4 ],
+  }
+
+  addRequest = (type, floor) =>
+  {
+    this.setState(R.assocPath(['queue', floor, type], true));
+  }
+
+  clearRequest = (type, floor) =>
+  {
+    this.setState(R.assocPath(['queue', floor, type], false));
+  }
+
+  getNextDestination = () =>
+  {
+    //TODO: implement a not-stupid queueing alg
+    return R.findIndex(R.pipe(R.values, R.any(R.identity)))(this.state.queue);
+  }
+
+  goToNextFloor = (commands) =>
+  {
+    const nextFloor = getNextDestination();
+    if ( nextFloor === -1 )
+    {
+      this.setState({idle: true});
+      return;
+    }
+
+    commands.goToFloor( () => nextFloor );
   }
 
   listeners = (() => ({
@@ -28,6 +64,22 @@ export default class Controller extends Component {
     * @returns {void}
     */
     onFloorCall: (commands, floor, up, down) => {
+      if ( up === down )
+      {
+        console.error("Received an invalid floor request");
+        return;
+      }
+
+      this.addRequest(up ? "up": "down", floor);
+
+      commands.setOutsideButtonLights(() => ({floor, up, down}));
+
+      if ( this.state.idle )
+      {
+        //TODO: close doors
+        this.setState({idle: false});
+        this.goToNextFloor(commands);
+      }
     },
 
     /**
@@ -37,6 +89,16 @@ export default class Controller extends Component {
     * @returns {void}
     */
     onCabinRequest: (commands, floor) => {
+      
+      this.addRequest("undirected", floor);
+
+      commands.setCabinRequestButtonLight(() => ({floor, value: true}));
+
+      if ( this.state.idle )
+      {
+        this.setState({idle: false});
+        this.goToNextFloor(commands);
+      }
     },
 
     /**
@@ -76,6 +138,8 @@ export default class Controller extends Component {
 
       // update cabin floor indicator
       commands.setCabinFloorIndicator(state => state.floor);
+
+      this.setState({moving: false});
       // TODO: update cabin's direction indicator
       // TODO: remove from queue
     },
@@ -86,6 +150,7 @@ export default class Controller extends Component {
     * @returns {void}
     */
     onCabinDoorsClosed: (commands) => {
+      this.goToNextFloor();
     },
 
     /**
