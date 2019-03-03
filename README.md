@@ -1,3 +1,9 @@
+# TODO
+* refactor to fix concurrency problems
+* make a random simulator
+* implement the entire controller logic
+* make a pretty UI [adrian]
+
 ## Elevator internal state:
 * Floor position
 * Door status

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import * as R from 'ramda';
 import GraphicalElevator from './GraphicalElevator';
 
-const numFloors = 5;
+export const numFloors = 5;
 const second = 500;
 
 export const FIRE_KEY = {
@@ -48,150 +48,119 @@ class Elevator extends Component {
   commands = ((self) => ({
     /**
      * goToFloor
-     * @arg {number} floor The index of the floor to go to
+     * @arg {func} f (state) => new floor index [number]
      * @returns {void}
      */
-    goToFloor (floor) {
-      console.log(`Going to floor ${floor}`);
+    goToFloor (f) {
+      const newFloor = f(self.state.floor);
       setTimeout(() => {
-        console.log(`Arrived at floor ${floor}`);
-        self.props.listeners.onFloorArrival(self.commands);
-        self.setState({
-          floor
+        self.setState(
+          (state) => ({ floor: f(state) }),
+          () => {
+            self.props.listeners.onFloorArrival(self.commands);
+          }
+        );
+      }, second * Math.abs(newFloor - self.state.floor) * 2)
+    },
+    /**
+     * setCabinDoors
+     * @arg {func} f (state) => isDoorsOpen [bool]
+     */
+    setCabinDoors(f) {
+      setTimeout(() => {
+        self.setState(state => R.assocPath(['cabin', 'doorsOpen'], f(state), state), () => {
+          if(self.state.cabin.doorsOpen) {
+            self.props.listeners.onCabinDoorsOpened(self.commands);
+          } else {
+            self.props.listeners.onCabinDoorsClosed(self.commands);
+          }
         });
-      }, second * Math.abs(floor - self.state.floor) * 2)
+      }, second * 1);
     },
     /**
-     * openCabinDoors
+     * setFloorDoors
+     * @param {func} f (state) => ({ isDoorsOpen:bool, floor:number })
      */
-    openCabinDoors() {
-      console.log('Opening cabin doors');
+    setFloorDoors(f) {
       setTimeout(() => {
-        console.log('Cabin doors opened');
-        self.props.listeners.onCabinDoorsOpened(self.commands);
-        self.setState(R.assocPath(['cabin', 'doorsOpen'], true));
-      }, second * 1)
-    },
-    /**
-     * closeCabinDoors
-     */
-    closeCabinDoors() {
-      console.log('Closing cabin doors');
-      setTimeout(() => {
-        console.log('Cabin doors closed');
-        self.props.listeners.onCabinDoorsClosed(self.commands);
-        self.setState(R.assocPath(['cabin', 'doorsOpen'], false));
-      }, second * 1)
-    },
-    /**
-     * openFloorDoors
-     * @param {number} floor The index of the floor whose doors you wish to open
-     */
-    openFloorDoors(floor) {
-      console.log(`Opening floor doors on floor ${floor}`);
-      setTimeout(() => {
-        console.log(`Floor doors on floor ${floor} opened`);
-        self.props.listeners.onFloorDoorsOpened(self.commands, floor);
-        self.setState(R.assocPath(['outside', floor, 'doorsOpen'], true));
-      }, second * 1)
-    },
-    /**
-     * closeFloorDoors
-     * @param {number} floor The index of the floor whose doors you wish to open
-     */
-    closeFloorDoors(floor) {
-      console.log(`Closing floor doors on floor ${floor}`);
-      setTimeout(() => {
-        console.log(`Floor doors on floor ${floor} closed`);
-        self.props.listeners.onFloorDoorsClosed(self.commands, floor);
-        self.setState(R.assocPath(['outside', floor, 'doorsOpen'], false));
-      }, second * 1)
+        let newFloor = 0;
+        self.setState(state => {
+          const { isDoorsOpen, floor } = f(state);
+          newFloor = floor;
+          return R.assocPath(['outside', floor, 'doorsOpen'], isDoorsOpen)(state);
+        }, () => {
+          self.props.listeners.onFloorDoorsOpened(self.commands, newFloor);
+        });
+      }, second * 1);
     },
     /**
      * setOutsideFloorIndicator
-     * @param {number} floor The index of the floor whose indicator you wish to set
-     * @param {number} value The number you wish to display
+     * @param {func} f (state) => ({ floor:number, value:number })
      */
-    setOutsideFloorIndicator(floor, value) {
-      console.log(`Setting indivator on floor ${floor} to ${value}`);
-      self.setState(R.assocPath(['outside', floor, 'floor'], value));
+    setOutsideFloorIndicator(f) {
+      self.setState(state => {
+        const { floor, value } = f(state);
+        return R.assocPath(['outside', floor, 'floor'], value)(state);
+      });
     },
     /**
      * setCabinFloorIndicator
-     * @param {number} value The number you wish to display
+     * @param {func} f (state) => value:number
      */
-    setCabinFloorIndicator(value) {
-      console.log(`Setting cabin floor indivator to ${value}`);
-      self.setState(R.assocPath(['cabin', 'floor'], value));
+    setCabinFloorIndicator(f) {
+      self.setState(state => {
+        return R.assocPath(['cabin', 'floor'], f(state))(state);
+      });
     },
     /**
      * setCabinDirectionIndicator
-     * @param {bool} up Whether or not the up indicator is illuminated
-     * @param {bool} down Whether or not the down indicator is illuminated
+     * @param {func} f (state) => ({ up:bool, down:bool })
      */
-    setCabinDirectionIndicator(up, down) {
-      console.log(`Setting cabin direction indicator to (up: ${up}, down: ${down})`);
-      self.setState(
-        R.pipe(
+    setCabinDirectionIndicator(f) {
+      self.setState(state => {
+        const { up, down } = f(state);
+        return R.pipe(
           R.assocPath(['cabin', 'up'], up),
           R.assocPath(['cabin', 'down'], down),
-        )
-      );
+        )(state);
+      });
     },
     /**
      * setOutsideDirectionIndicator
-     * @param {number} floor The index of the floor whose indicator you wish to set
-     * @param {bool} up Whether or not the up indicator is illuminated
-     * @param {bool} down Whether or not the down indicator is illuminated
+     * @param {func} f (state) => ({ floor:number, up:bool, down:bool })
      */
-    setOutsideDirectionIndicator(floor, up, down) {
-      console.log(`Setting outside direction indicator of floor ${floor} to (up: ${up}, down: ${down})`);
-      self.setState(
-        R.pipe(
+    setOutsideDirectionIndicator(f) {
+      self.setState(state => {
+        const { floor, up, down } = f(state)
+        return R.pipe(
           R.assocPath(['outside', floor, 'up'], up),
           R.assocPath(['outside', floor, 'down'], down),
-        )
-      );
+        )(state);
+      });
     },
     /**
      * setOutsideButtonLights
-     * @param {number} floor The index of the floor whose button lights you wish to set
-     * @param {bool} up Whether or not the up button is illuminated
-     * @param {bool} down Whether or not the down button is illuminated
+     * @param {func} f (state) => ({ floor:number, up:bool, down:bool })
      */
-    setOutsideButtonLights(floor, up, down) {
-      console.log(`Setting outside button lights of floor ${floor} to (up: ${up}, down: ${down})`);
-      self.setState(
-        R.pipe(
+    setOutsideButtonLights(f) {
+      self.setState(state => {
+        const { floor, up, down } = f(state);
+        return R.pipe(
           R.assocPath(['outside', floor, 'buttonUp'], up),
           R.assocPath(['outside', floor, 'buttonDown'], down),
-        )
-      );
+        )(state);
+      });
     },
     /**
      * setCabinRequestButtonLight
-     * @param {number} floor The index of the floor whose button light you wish to illuminate
-     * @param {bool} value Illuminated if true
+     * @param {func} f (state) => ({ floor:number, value:number })
      */
-    setCabinRequestButtonLight(floor, value) {
-      console.log(`Setting cabin request button light for floor ${floor} to ${value}`);
-      self.setState(R.assocPath(['cabin', 'buttons', floor, 'lightOn'], value),);
+    setCabinRequestButtonLight(f) {
+      self.setState(state => {
+        const { floor, value } = f(state);
+        return R.assocPath(['cabin', 'buttons', floor, 'lightOn'], value)(state);
+      });
     },
-
-    /*
-       Getters for all the internal elevator state
-    */
-    getCurrentFloor: () => self.state.floor,
-    getOutsideFloorIndicator: (floor) => self.state.outside[floor].floor,
-    getOutsideFloorDirectionIndicators: (floor) => R.pick(['up', 'down'], self.state.outside[floor]),
-    getOutsideButtonIndicators: (floor) => R.pick(['upButton', 'downButton'], self.state.outside[floor]),
-    isOutsideDoorOpen: floor => self.state.outside[floor].doorsOpen,
-    getCabinFloorIndicator: () => self.state.cabin.floor,
-    getCabinDirectionIndicator: () => R.pick(['up', 'down'], self.state.cabin),
-    areCabinDoorsOpen: () => self.state.cabin.doorsOpen,
-    getCabinButtonLightStatus: (floor) => self.state.cabin.buttons[floor].lightOn,
-    getFireKeyPosition: () => self.state.cabin.fireKeyPosition,
-
   }))(this)
 
   render() {
@@ -240,6 +209,9 @@ class Elevator extends Component {
                             Floor indicator: {this.state.outside[floor].floor}
                         </div>
                         <div>
+                            Doors open: {this.state.outside[floor].doorsOpen ? 'OPEN' : 'CLOSED'}
+                        </div>
+                        <div>
                             Up: {this.state.outside[floor].up ? 'ON' : 'OFF'}
                         </div>
                         <div>
@@ -257,7 +229,7 @@ class Elevator extends Component {
           </div>
           <div>
               <h2>Override Events</h2>
-              <button onClick={() => this.commands.goToFloor(3)}>Go To Floor 3</button>
+              <button onClick={() => this.commands.goToFloor(() => 3)}>Go To Floor 3</button>
               <button onClick={this.commands.openCabinDoors}>Open cabin doors</button>
               <button onClick={this.commands.closeCabinDoors}>Close cabin doors</button>
           </div>

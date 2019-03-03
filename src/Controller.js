@@ -1,4 +1,6 @@
 import React, { Component } from 'react';
+import * as R from 'ramda';
+import { numFloors } from './Elevator';
 
 export default class Controller extends Component {
 
@@ -59,6 +61,23 @@ export default class Controller extends Component {
     * @returns {void}
     */
     onFloorArrival: (commands) => {
+      // Open the doors
+      commands.setCabinDoors(() => true);
+      // Open the floor doors
+      commands.setFloorDoors(state => ({ floor: state.floor, isDoorsOpen: true }))
+      // TODO: update each floor's direction indicator
+      // update each floor's floor indicator
+      R.pipe(
+        R.range(0),
+        R.forEach((floor) => {
+          commands.setOutsideFloorIndicator(state => ({ floor, value: state.floor }));
+        })
+      )(numFloors);
+
+      // update cabin floor indicator
+      commands.setCabinFloorIndicator(state => state.floor);
+      // TODO: update cabin's direction indicator
+      // TODO: remove from queue
     },
 
     /**
