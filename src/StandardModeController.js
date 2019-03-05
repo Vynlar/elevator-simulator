@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import * as R from 'ramda';
-import { numFloors } from './Elevator';
+import { numFloors, second } from './Elevator';
 
 class StandardModeController extends Component
 {
@@ -101,6 +101,11 @@ class StandardModeController extends Component
     * @returns {void}
     */
     onDoorOpenRequest: (commands) => {
+      if ( ! this.state.moving )
+      {
+        commands.setCabinDoors(R.T);
+        commands.setFloorDoors(R.T);
+      }
     },
 
     /**
@@ -109,6 +114,8 @@ class StandardModeController extends Component
     * @returns {void}
     */
     onDoorCloseRequest: (commands) => {
+      commands.setCabinDoors(R.F);
+      commands.setFloorDoors(R.F);
     },
 
     /**
@@ -153,7 +160,10 @@ class StandardModeController extends Component
     * @returns {void}
     */
     onCabinDoorsOpened: (commands) => {
-      console.log("standard door open");
+      if ( this.state.moving )
+        console.error("Doors opened while moving");
+
+      setTimeout(() => this.listeners.onDoorCloseRequest(commands), 3 * second);
     },
 
     /**
