@@ -46,7 +46,7 @@ class StandardModeController extends Component
       return;
     }
 
-    const floorIndicatorF = (floor) => (state) => ({floor, 
+    const floorIndicatorF = (floor) => (state) => ({floor,
       up: (state.floor < nextFloor),
       down: (state.floor > nextFloor)});
     const cabinIndicatorF = (state) => ({up: (state.floor < nextFloor),
@@ -105,7 +105,7 @@ class StandardModeController extends Component
     * @returns {void}
     */
     onCabinRequest: (commands, floor) => {
-      
+
       this.addRequest("undirected", floor, commands);
 
       commands.setCabinRequestButtonLight(() => ({floor, value: true}));
@@ -144,6 +144,20 @@ class StandardModeController extends Component
           commands.setOutsideFloorIndicator(state => ({ floor, value: state.floor }));
         })
       )(numFloors);
+
+      // update outside button lights
+      if (this.state.isGoingUp) {
+        commands.setOutsideButtonLights(state => {
+          const currentFloor = state.floor;
+          return ({floor:state.floor, up:false, down:state.outside[currentFloor].buttonDown});
+        });
+      } else {
+        commands.setOutsideButtonLights(state => {
+          const currentFloor = state.floor;
+          return ({floor:state.floor, down:false, up:state.outside[currentFloor].buttonUp});
+        });
+      }
+
 
       // update cabin floor indicator
       commands.setCabinFloorIndicator(state => state.floor);
