@@ -58,7 +58,7 @@ class Elevator extends Component {
           (state) => ({ floor: f(state) }),
           () => {
             self.props.listeners.onFloorArrival(self.commands);
-            cb(this.state);
+            cb(self.state);
           }
         );
       }, second * Math.abs(newFloor - self.state.floor) * 2)
@@ -75,7 +75,7 @@ class Elevator extends Component {
           } else {
             self.props.listeners.onCabinDoorsClosed(self.commands);
           }
-         cb(this.state);
+         cb(self.state);
         });
       }, second * 1);
     },
@@ -95,7 +95,7 @@ class Elevator extends Component {
             self.props.listeners.onFloorDoorsOpened(self.commands, newFloor);
           else
             self.props.listeners.onFloorDoorsClosed(self.commands, newFloor);
-            cb(this.state);
+            cb(self.state);
           });
       }, second * 1);
     },
@@ -107,7 +107,7 @@ class Elevator extends Component {
       self.setState(state => {
         const { floor, value } = f(state);
         return R.assocPath(['outside', floor, 'floor'], value)(state);
-      }, () => cb(this.state));
+      }, () => cb(self.state));
     },
     /**
      * setCabinFloorIndicator
@@ -116,7 +116,7 @@ class Elevator extends Component {
     setCabinFloorIndicator(f, cb = () => {}) {
       self.setState(state => {
         return R.assocPath(['cabin', 'floor'], f(state))(state);
-      }, () => cb(this.state));
+      }, () => cb(self.state));
     },
     /**
      * setCabinDirectionIndicator
@@ -129,7 +129,7 @@ class Elevator extends Component {
           R.assocPath(['cabin', 'up'], up),
           R.assocPath(['cabin', 'down'], down),
         )(state);
-      }, () => cb(this.state));
+      }, () => cb(self.state));
     },
     /**
      * setOutsideDirectionIndicator
@@ -142,7 +142,7 @@ class Elevator extends Component {
           R.assocPath(['outside', floor, 'up'], up),
           R.assocPath(['outside', floor, 'down'], down),
         )(state);
-      }, () => cb(this.state));
+      }, () => cb(self.state));
     },
     /**
      * setOutsideButtonLights
@@ -155,7 +155,7 @@ class Elevator extends Component {
           R.assocPath(['outside', floor, 'buttonUp'], up),
           R.assocPath(['outside', floor, 'buttonDown'], down),
         )(state);
-      }, () => cb(this.state));
+      }, () => cb(self.state));
     },
     /**
      * setCabinRequestButtonLight
@@ -165,7 +165,7 @@ class Elevator extends Component {
       self.setState(state => {
         const { floor, value } = f(state);
         return R.assocPath(['cabin', 'buttons', floor, 'lightOn'], value)(state);
-      }, () => cb(this.state));
+      }, () => cb(self.state));
     },
   }))(this)
 
@@ -235,7 +235,7 @@ class Elevator extends Component {
           </div>
           <div>
               <h2>Override Events</h2>
-              <button onClick={() => this.props.listeners.onFloorCall(this.commands, 3, false, true)}>Floor 3 button down </button>
+              <button onClick={() => this.props.listeners.onFloorCall(this.commands, 3, true, false)}>Floor 3 button up </button>
               <button onClick={() => this.props.listeners.onFireAlarm()}>Simulate Fire Alarm</button>
               <button onClick={() => this.props.listeners.onDoorOpenRequest(this.commands)}>Open cabin doors (cabin button)</button>
               <button onClick={() => this.props.listeners.onDoorCloseRequest(this.commands)}>Close cabin doors (cabin button)</button>

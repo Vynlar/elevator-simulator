@@ -31,29 +31,11 @@ class StandardModeController extends Component
     this.setState(R.assocPath(['queue', floor, type], false));
   }
 
-  goToNextDestination = (state) =>
+  getNextDestination = (state) =>
   {
     const nextFloor = R.findIndex(R.pipe(R.values, R.any(R.identity)))(this.state.queue);
-    
-    const floorIndicatorF = (floor) => ({floor,
-      up: (state.floor < nextFloor),
-      down: (state.floor > nextFloor)});
-    const cabinIndicatorF = () => ({up: (state.floor < nextFloor),
-      down: (state.floor > nextFloor)});
-
-    R.pipe(
-      R.range(0),
-      R.forEach((floor) => {
-        commands.setOutsideDirectionIndicator(floorIndicatorF(floor));
-      })
-    )(numFloors);
-    commands.setCabinDirectionIndicator(cabinIndicatorF);
+    return nextFloor;
     //TODO: implement a not-stupid queueing alg
-  }
-
-  goingToDestination = state =>
-  {
-    
   }
 
   goToNextFloor = (commands) =>
@@ -63,11 +45,30 @@ class StandardModeController extends Component
       return;
     }
 
+    this.setState({moving: true},
+      () => commands.goToFloor(
+        (state) => this.getNextDestination(state),
+        (state) => {
+          const nextFloor = this.getNextDestination(state);
 
-    this.setState({moving: true}, 
-      () => commands.goToFloor( 
-        (state) => this.goToNextDestination(state),
-        (state) => this.goingToDestination(state) ));
+          const floorIndicatorF = (floor) => ({floor,
+            up: (state.floor < nextFloor),
+            down: (state.floor > nextFloor)});
+          const cabinIndicatorF = () => ({
+            up: (state.floor < nextFloor),
+            down: (state.floor > nextFloor)});
+
+          // Within the callback, setting the isGoingUp property within the controller state
+          this.setState({isGoingUp: nextFloor > state.floor});
+
+          R.pipe(
+            R.range(0),
+            R.forEach((floor) => {
+              commands.setOutsideDirectionIndicator((() => floorIndicatorF(floor)));
+            })
+          )(numFloors);
+          commands.setCabinDirectionIndicator(cabinIndicatorF);
+        }));
 
   }
 
@@ -158,6 +159,7 @@ class StandardModeController extends Component
       if (this.state.isGoingUp) {
         commands.setOutsideButtonLights(state => {
           const currentFloor = state.floor;
+          console.log(this.state.isGoingUp);
           return ({floor:state.floor, up:false, down:state.outside[currentFloor].buttonDown});
         });
       } else {
