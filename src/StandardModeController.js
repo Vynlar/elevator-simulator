@@ -125,7 +125,6 @@ class StandardModeController extends Component
     */
     onFloorArrival: (commands) => {
       // Open the doors
-      this.listeners.onDoorOpenRequest(commands);
       // TODO: update each floor's direction indicator
       // update each floor's floor indicator
       R.pipe(
@@ -138,7 +137,7 @@ class StandardModeController extends Component
       // update cabin floor indicator
       commands.setCabinFloorIndicator(state => state.floor);
 
-      this.setState({moving: false});
+      this.setState({moving: false}, () => this.listeners.onDoorOpenRequest(commands));
       // TODO: update cabin's direction indicator
       // TODO: remove from queue
     },
