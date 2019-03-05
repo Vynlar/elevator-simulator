@@ -104,7 +104,7 @@ class StandardModeController extends Component
       if ( ! this.state.moving )
       {
         commands.setCabinDoors(R.T);
-        commands.setFloorDoors(R.T);
+        commands.setFloorDoors(state => ({ floor: state.floor, isDoorsOpen: true }))
       }
     },
 
@@ -115,7 +115,7 @@ class StandardModeController extends Component
     */
     onDoorCloseRequest: (commands) => {
       commands.setCabinDoors(R.F);
-      commands.setFloorDoors(R.F);
+      commands.setFloorDoors(state => ({ floor: state.floor, isDoorsOpen: false }))
     },
 
     /**
@@ -125,9 +125,7 @@ class StandardModeController extends Component
     */
     onFloorArrival: (commands) => {
       // Open the doors
-      commands.setCabinDoors(() => true);
-      // Open the floor doors
-      commands.setFloorDoors(state => ({ floor: state.floor, isDoorsOpen: true }))
+      this.listeners.onDoorOpenRequest(commands);
       // TODO: update each floor's direction indicator
       // update each floor's floor indicator
       R.pipe(
