@@ -185,12 +185,6 @@ class Elevator extends Component {
                   Doors: {this.state.cabin.doorsOpen ? 'OPEN' : 'CLOSED'}
               </div>
               <div>
-                  Up: {this.state.cabin.up ? 'ON' : 'OFF' }
-              </div>
-              <div>
-                  Down: {this.state.cabin.down ? 'ON' : 'OFF' }
-              </div>
-              <div>
                   Fire key position: {this.state.cabin.fireKeyPosition}
               </div>
               <div>
@@ -219,12 +213,6 @@ class Elevator extends Component {
                         </div>
                         <div>
                             Doors open: {this.state.outside[floor].doorsOpen ? 'OPEN' : 'CLOSED'}
-                        </div>
-                        <div>
-                            Up: {this.state.outside[floor].up ? 'ON' : 'OFF'}
-                        </div>
-                        <div>
-                            Down: {this.state.outside[floor].down ? 'ON' : 'OFF'}
                         </div>
                         <div>
                             Button Up: {this.state.outside[floor].buttonUp ? 'ON' : 'OFF'}
