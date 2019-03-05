@@ -193,6 +193,12 @@ class Elevator extends Component {
               <div>
                   Fire key position: {this.state.cabin.fireKeyPosition}
               </div>
+              <div>
+                  Direction Indicator ^: {this.state.cabin.up? 'ON' : 'OFF'}
+              </div>
+              <div>
+                  Direction Indicator v: {this.state.cabin.down? 'ON' : 'OFF'}
+              </div>
               <h3>Buttons</h3>
               <div>
                   {this.state.cabin.buttons.map(({ lightOn }, index) => (
@@ -226,13 +232,19 @@ class Elevator extends Component {
                         <div>
                             Button Down: {this.state.outside[floor].buttonDown ? 'ON' : 'OFF'}
                         </div>
+                        <div>
+                            Direction Indicator ^: {this.state.outside[floor].up? 'ON' : 'OFF'}
+                        </div>
+                        <div>
+                            Direction Indicator v: {this.state.outside[floor].down? 'ON' : 'OFF'}
+                        </div>
                     </div>
                   ))}
               </div>
           </div>
           <div>
               <h2>Override Events</h2>
-              <button onClick={() => this.commands.goToFloor(() => 3)}>Go To Floor 3</button>
+              <button onClick={() => this.props.listeners.onFloorCall(this.commands, 3, true, false)}>Floor 3 button up </button>
               <button onClick={() => this.props.listeners.onFireAlarm()}>Simulate Fire Alarm</button>
               <button onClick={() => this.props.listeners.onDoorOpenRequest(this.commands)}>Open cabin doors (cabin button)</button>
               <button onClick={() => this.props.listeners.onDoorCloseRequest(this.commands)}>Close cabin doors (cabin button)</button>

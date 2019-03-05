@@ -11,7 +11,7 @@ class StandardModeController extends Component
     )(0, numFloors),
     isGoingUp: false,
     moving: false,
-    idle: true,
+    areDoorsOpen: false,
   }
 
   componentDidMount = () =>
@@ -20,9 +20,10 @@ class StandardModeController extends Component
   }
 
 
-  addRequest = (type, floor) =>
+  addRequest = (type, floor, commands) =>
   {
-    this.setState(R.assocPath(['queue', floor, type], true));
+    this.setState(R.assocPath(['queue', floor, type], true),
+      () => this.goToNextFloor(commands));
   }
 
   clearRequest = (type, floor) =>
@@ -39,13 +40,41 @@ class StandardModeController extends Component
   goToNextFloor = (commands) =>
   {
     const nextFloor = this.getNextDestination();
-    if ( nextFloor === -1 )
+    console.log(nextFloor, "newfloor");
+    if ( this.state.areDoorsOpen || nextFloor === -1 || this.state.moving )
     {
-      this.setState({idle: true});
       return;
     }
 
-    commands.goToFloor( () => nextFloor );
+    const floorIndicatorF = (floor) => (state) => ({floor, 
+      up: (state.floor < nextFloor),
+      down: (state.floor > nextFloor)});
+    const cabinIndicatorF = (state) => ({up: (state.floor < nextFloor),
+      down: (state.floor > nextFloor)});
+
+    this.setState({moving: true}, () => commands.goToFloor( () => nextFloor ));
+    R.pipe(
+      R.range(0),
+      R.forEach((floor) => {
+        commands.setOutsideDirectionIndicator(floorIndicatorF(floor));
+      })
+    )(numFloors);
+    commands.setCabinDirectionIndicator(cabinIndicatorF);
+  }
+
+  closeDoors = (commands) =>
+  {
+    commands.setCabinDoors(R.F);
+    commands.setFloorDoors(state => ({ floor: state.floor, isDoorsOpen: false }));
+  }
+
+  openDoorsAttempt = (commands) =>
+  {
+    if ( ! this.state.moving )
+    {
+      commands.setCabinDoors(R.T);
+      commands.setFloorDoors(state => ({ floor: state.floor, isDoorsOpen: true }))
+    }
   }
 
   listeners = (() => ({
@@ -64,16 +93,9 @@ class StandardModeController extends Component
         return;
       }
 
-      this.addRequest(up ? "up": "down", floor);
+      this.addRequest(up ? "up": "down", floor, commands);
 
       commands.setOutsideButtonLights(() => ({floor, up, down}));
-
-      if ( this.state.idle )
-      {
-        //TODO: close doors
-        this.setState({idle: false});
-        this.goToNextFloor(commands);
-      }
     },
 
     /**
@@ -84,15 +106,9 @@ class StandardModeController extends Component
     */
     onCabinRequest: (commands, floor) => {
       
-      this.addRequest("undirected", floor);
+      this.addRequest("undirected", floor, commands);
 
       commands.setCabinRequestButtonLight(() => ({floor, value: true}));
-
-      if ( this.state.idle )
-      {
-        this.setState({idle: false});
-        this.goToNextFloor(commands);
-      }
     },
 
     /**
@@ -101,11 +117,7 @@ class StandardModeController extends Component
     * @returns {void}
     */
     onDoorOpenRequest: (commands) => {
-      if ( ! this.state.moving )
-      {
-        commands.setCabinDoors(R.T);
-        commands.setFloorDoors(state => ({ floor: state.floor, isDoorsOpen: true }))
-      }
+      this.openDoorsAttempt(commands)
     },
 
     /**
@@ -114,8 +126,7 @@ class StandardModeController extends Component
     * @returns {void}
     */
     onDoorCloseRequest: (commands) => {
-      commands.setCabinDoors(R.F);
-      commands.setFloorDoors(state => ({ floor: state.floor, isDoorsOpen: false }))
+      this.closeDoors(commands);
     },
 
     /**
@@ -137,7 +148,7 @@ class StandardModeController extends Component
       // update cabin floor indicator
       commands.setCabinFloorIndicator(state => state.floor);
 
-      this.setState({moving: false}, () => this.listeners.onDoorOpenRequest(commands));
+      this.setState({moving: false}, () => this.openDoorsAttempt(commands));
       // TODO: update cabin's direction indicator
       // TODO: remove from queue
     },
@@ -148,7 +159,7 @@ class StandardModeController extends Component
     * @returns {void}
     */
     onCabinDoorsClosed: (commands) => {
-      this.goToNextFloor();
+      this.setState({areDoorsOpen: false}, () => this.goToNextFloor(commands));
     },
 
     /**
@@ -160,7 +171,8 @@ class StandardModeController extends Component
       if ( this.state.moving )
         console.error("Doors opened while moving");
 
-      setTimeout(() => this.listeners.onDoorCloseRequest(commands), 3 * second);
+      this.setState({areDoorsOpen: true}, () =>
+        setTimeout(() => this.closeDoors(commands), 3 * second));
     },
 
     /**
