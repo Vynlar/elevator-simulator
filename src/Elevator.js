@@ -4,7 +4,7 @@ import * as R from 'ramda';
 import GraphicalElevator from './GraphicalElevator';
 
 export const numFloors = 5;
-const second = 500;
+export const second = 500;
 
 export const FIRE_KEY = {
   OFF: 'OFF',
@@ -233,8 +233,9 @@ class Elevator extends Component {
           <div>
               <h2>Override Events</h2>
               <button onClick={() => this.commands.goToFloor(() => 3)}>Go To Floor 3</button>
-              <button onClick={this.commands.openCabinDoors}>Open cabin doors</button>
-              <button onClick={this.commands.closeCabinDoors}>Close cabin doors</button>
+              <button onClick={() => this.props.listeners.onFireAlarm()}>Simulate Fire Alarm</button>
+              <button onClick={this.commands.setCabinDoors(R.T)}>Open cabin doors</button>
+              <button onClick={this.commands.setCabinDoors(R.F)}>Close cabin doors</button>
           </div>
       </div>
     );
