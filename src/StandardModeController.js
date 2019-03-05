@@ -31,28 +31,16 @@ class StandardModeController extends Component
     this.setState(R.assocPath(['queue', floor, type], false));
   }
 
-  getNextDestination = () =>
+  goToNextDestination = (state) =>
   {
-    //TODO: implement a not-stupid queueing alg
-    return R.findIndex(R.pipe(R.values, R.any(R.identity)))(this.state.queue);
-  }
-
-  goToNextFloor = (commands) =>
-  {
-    const nextFloor = this.getNextDestination();
-    console.log(nextFloor, "newfloor");
-    if ( this.state.areDoorsOpen || nextFloor === -1 || this.state.moving )
-    {
-      return;
-    }
-
-    const floorIndicatorF = (floor) => (state) => ({floor,
+    const nextFloor = R.findIndex(R.pipe(R.values, R.any(R.identity)))(this.state.queue);
+    
+    const floorIndicatorF = (floor) => ({floor,
       up: (state.floor < nextFloor),
       down: (state.floor > nextFloor)});
-    const cabinIndicatorF = (state) => ({up: (state.floor < nextFloor),
+    const cabinIndicatorF = () => ({up: (state.floor < nextFloor),
       down: (state.floor > nextFloor)});
 
-    this.setState({moving: true}, () => commands.goToFloor( () => nextFloor ));
     R.pipe(
       R.range(0),
       R.forEach((floor) => {
@@ -60,6 +48,27 @@ class StandardModeController extends Component
       })
     )(numFloors);
     commands.setCabinDirectionIndicator(cabinIndicatorF);
+    //TODO: implement a not-stupid queueing alg
+  }
+
+  goingToDestination = state =>
+  {
+    
+  }
+
+  goToNextFloor = (commands) =>
+  {
+    if ( this.state.areDoorsOpen || this.state.moving )
+    {
+      return;
+    }
+
+
+    this.setState({moving: true}, 
+      () => commands.goToFloor( 
+        (state) => this.goToNextDestination(state),
+        (state) => this.goingToDestination(state) ));
+
   }
 
   closeDoors = (commands) =>

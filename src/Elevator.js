@@ -51,13 +51,14 @@ class Elevator extends Component {
      * @arg {func} f (state) => new floor index [number]
      * @returns {void}
      */
-    goToFloor (f) {
+    goToFloor (f, cb = () => {}) {
       const newFloor = f(self.state.floor);
       setTimeout(() => {
         self.setState(
           (state) => ({ floor: f(state) }),
           () => {
             self.props.listeners.onFloorArrival(self.commands);
+            cb(this.state);
           }
         );
       }, second * Math.abs(newFloor - self.state.floor) * 2)
@@ -66,7 +67,7 @@ class Elevator extends Component {
      * setCabinDoors
      * @arg {func} f (state) => isDoorsOpen [bool]
      */
-    setCabinDoors(f) {
+    setCabinDoors(f, cb = () => {}) {
       setTimeout(() => {
         self.setState(state => R.assocPath(['cabin', 'doorsOpen'], f(state), state), () => {
           if(self.state.cabin.doorsOpen) {
@@ -74,6 +75,7 @@ class Elevator extends Component {
           } else {
             self.props.listeners.onCabinDoorsClosed(self.commands);
           }
+         cb(this.state);
         });
       }, second * 1);
     },
@@ -81,7 +83,7 @@ class Elevator extends Component {
      * setFloorDoors
      * @param {func} f (state) => ({ isDoorsOpen:bool, floor:number })
      */
-    setFloorDoors(f) {
+    setFloorDoors(f, cb = () => {}) {
       setTimeout(() => {
         let newFloor = 0;
         self.setState(state => {
@@ -93,76 +95,77 @@ class Elevator extends Component {
             self.props.listeners.onFloorDoorsOpened(self.commands, newFloor);
           else
             self.props.listeners.onFloorDoorsClosed(self.commands, newFloor);
-        });
+            cb(this.state);
+          });
       }, second * 1);
     },
     /**
      * setOutsideFloorIndicator
      * @param {func} f (state) => ({ floor:number, value:number })
      */
-    setOutsideFloorIndicator(f) {
+    setOutsideFloorIndicator(f, cb = () => {}) {
       self.setState(state => {
         const { floor, value } = f(state);
         return R.assocPath(['outside', floor, 'floor'], value)(state);
-      });
+      }, () => cb(this.state));
     },
     /**
      * setCabinFloorIndicator
      * @param {func} f (state) => value:number
      */
-    setCabinFloorIndicator(f) {
+    setCabinFloorIndicator(f, cb = () => {}) {
       self.setState(state => {
         return R.assocPath(['cabin', 'floor'], f(state))(state);
-      });
+      }, () => cb(this.state));
     },
     /**
      * setCabinDirectionIndicator
      * @param {func} f (state) => ({ up:bool, down:bool })
      */
-    setCabinDirectionIndicator(f) {
+    setCabinDirectionIndicator(f, cb = () => {}) {
       self.setState(state => {
         const { up, down } = f(state);
         return R.pipe(
           R.assocPath(['cabin', 'up'], up),
           R.assocPath(['cabin', 'down'], down),
         )(state);
-      });
+      }, () => cb(this.state));
     },
     /**
      * setOutsideDirectionIndicator
      * @param {func} f (state) => ({ floor:number, up:bool, down:bool })
      */
-    setOutsideDirectionIndicator(f) {
+    setOutsideDirectionIndicator(f, cb = () => {}) {
       self.setState(state => {
         const { floor, up, down } = f(state)
         return R.pipe(
           R.assocPath(['outside', floor, 'up'], up),
           R.assocPath(['outside', floor, 'down'], down),
         )(state);
-      });
+      }, () => cb(this.state));
     },
     /**
      * setOutsideButtonLights
      * @param {func} f (state) => ({ floor:number, up:bool, down:bool })
      */
-    setOutsideButtonLights(f) {
+    setOutsideButtonLights(f, cb = () => {}) {
       self.setState(state => {
         const { floor, up, down } = f(state);
         return R.pipe(
           R.assocPath(['outside', floor, 'buttonUp'], up),
           R.assocPath(['outside', floor, 'buttonDown'], down),
         )(state);
-      });
+      }, () => cb(this.state));
     },
     /**
      * setCabinRequestButtonLight
      * @param {func} f (state) => ({ floor:number, value:number })
      */
-    setCabinRequestButtonLight(f) {
+    setCabinRequestButtonLight(f, cb = () => {}) {
       self.setState(state => {
         const { floor, value } = f(state);
         return R.assocPath(['cabin', 'buttons', floor, 'lightOn'], value)(state);
-      });
+      }, () => cb(this.state));
     },
   }))(this)
 
