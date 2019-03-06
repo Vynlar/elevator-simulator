@@ -248,27 +248,6 @@ class StandardModeController extends Component
         })
       )(numFloors);
 
-      // update outside button lights
-      if (this.state.isGoingUp) {
-        commands.setOutsideButtonLights(state => {
-          const currentFloor = state.floor;
-          return ({
-            floor: state.floor,
-            up: false,
-            down: state.outside[currentFloor].buttonDown,
-          });
-        });
-      } else {
-        commands.setOutsideButtonLights(state => {
-          const currentFloor = state.floor;
-          return ({
-            floor: state.floor,
-            down: false,
-            up: state.outside[currentFloor].buttonUp,
-          });
-        });
-      }
-
       // update cabin floor indicator
       commands.setCabinFloorIndicator(state => state.floor);
 
@@ -282,9 +261,24 @@ class StandardModeController extends Component
         {
           this.clearRequest('up', state.floor);
           this.clearRequest('down', state.floor);
+          commands.setOutsideButtonLights(() => {
+            return ({
+              floor: state.floor,
+              up: false,
+              down: false,
+            });
+          });
         }
         else {
           this.clearRequest(this.state.isGoingUp ? 'up' : 'down', state.floor);
+          commands.setOutsideButtonLights(() => {
+            const currentFloor = state.floor;
+            return ({
+              floor: currentFloor,
+              up: this.state.isGoingUp ? false : state.outside[currentFloor].buttonUp,
+              down: ! this.state.isGoingUp ? false : state.outside[currentFloor].buttonDown,
+            });
+          });
         }
 
         this.clearRequest('undirected', state.floor);
