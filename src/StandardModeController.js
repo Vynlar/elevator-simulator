@@ -150,14 +150,16 @@ class StandardModeController extends Component
   {
     commands.setCabinDoors(R.F);
     commands.setFloorDoors(state => ({ floor: state.floor, isDoorsOpen: false }));
+    this.setState({ areDoorsOpen: false });
   }
 
   openDoorsAttempt = (commands) =>
   {
-    if ( ! this.state.moving )
+    if ( !this.state.moving )
     {
       commands.setCabinDoors(R.T);
-      commands.setFloorDoors(state => ({ floor: state.floor, isDoorsOpen: true }))
+      commands.setFloorDoors(state => ({ floor: state.floor, isDoorsOpen: true }));
+      this.setState({ areDoorsOpen: true });
     }
   }
 
@@ -176,21 +178,23 @@ class StandardModeController extends Component
     const { queue, isGoingUp } = this.state;
     // get the remaining floors
     const sameDirectionFloors = this.getSameDirectionFloors(floor, isGoingUp);
-      // check for requests, if there are any, return false, else true
-    const res = R.pipe(
+    // check for requests, if there are any, return false, else true
+    const areRemainingRequests = R.pipe(
       R.map(R.values), // turn into 2d boolean array
       R.flatten, // turn into 1d boolean array
       R.none(R.equals(true)), // make sure none are true
     )(sameDirectionFloors);
 
-    if ( ! res )
+
+    if (!areRemainingRequests)
     {
       return R.pipe(
         R.values,
         R.any(R.equals(true))
       )(queue[floor]);
     }
-    return res;
+
+    return areRemainingRequests;
   }
 
   listeners = (() => ({
@@ -271,8 +275,9 @@ class StandardModeController extends Component
       // remove from queue
       commands.getLatestState(state => {
         const shouldChangeDirection = this.shouldChangeDirection(state.floor);
-      
-        if ( shouldChangeDirection )
+        console.log(shouldChangeDirection);
+
+        if (shouldChangeDirection)
         {
           this.clearRequest('up', state.floor);
           this.clearRequest('down', state.floor);
@@ -286,6 +291,7 @@ class StandardModeController extends Component
         }
         else {
           this.clearRequest(this.state.isGoingUp ? 'up' : 'down', state.floor);
+
           commands.setOutsideButtonLights(() => {
             const currentFloor = state.floor;
             return ({
@@ -318,7 +324,7 @@ class StandardModeController extends Component
       if ( this.state.moving )
         throw new Error("Doors opened while moving");
 
-      this.setState({areDoorsOpen: true}, () =>
+      this.setState({ areDoorsOpen: true }, () =>
         setTimeout(() => this.closeDoors(commands), 3 * second));
     },
 
