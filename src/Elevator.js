@@ -4,7 +4,7 @@ import * as R from 'ramda';
 import GraphicalElevator from './GraphicalElevator';
 
 export const numFloors = 5;
-export const second = 5000;
+export const second = 1000;
 
 export const FIRE_KEY = {
   OFF: 'OFF',
@@ -180,7 +180,7 @@ class Elevator extends Component {
   render() {
     return (
       <div>
-          <GraphicalElevator numFloors={numFloors} />
+          <GraphicalElevator numFloors={numFloors} state={this.state} />
           <div>
               <h2>General</h2>
               <div>

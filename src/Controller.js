@@ -66,7 +66,7 @@ export default class Controller extends Component {
             registerListeners={this.registerListeners}
           />
         }
-        <Shell listeners={{...this.state.childListeners, ...this.listeners}} />
+        <Shell listeners={{ ...this.state.childListeners, ...this.listeners }} />
       </div>
     );
   }
