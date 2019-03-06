@@ -5,7 +5,7 @@ import { numFloors } from './Elevator';
 class EmergencyModeController extends Component
 {
 
-  emergencyModeState = {
+  state = {
     executedEmergencyRoutine: false,
     areDoorsOpen: true,               // opposite of SMC, our base state is the doors are open
     isGoingUp: false,
@@ -51,7 +51,7 @@ class EmergencyModeController extends Component
     * @returns {void}
     */
     onCabinRequest: (commands, requestedFloor) => {
-      if(this.emergencyModeState.areDoorsOpen)
+      if(this.state.areDoorsOpen)
       {
         console.log("Do nothing, the doors are open!");
         return
@@ -103,7 +103,7 @@ class EmergencyModeController extends Component
       this.setState({areDoorsOpen: true});
       commands.setCabinDoors(R.T);
       commands.setFloorDoors(state => ({ floor: state.floor, isDoorsOpen: true }));
-      console.log("Open doors")
+      console.log("Open doors");
     },
 
     /**
@@ -115,7 +115,8 @@ class EmergencyModeController extends Component
       this.setState({areDoorsOpen: false});
       commands.setCabinDoors(R.F);
       commands.setFloorDoors(state => ({ floor: state.floor, isDoorsOpen: false }));
-      console.log("Close doors")
+      console.log("Close doors");
+      console.log(this.state.areDoorsOpen);
 
     },
 
