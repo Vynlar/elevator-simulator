@@ -177,7 +177,6 @@ class EmergencyModeController extends Component
     */
     onCabinDoorsOpened: (commands) => {
       this.setState({ areDoorsOpen: true });
-      console.log("emergency door open");
     },
 
     /**
@@ -187,7 +186,7 @@ class EmergencyModeController extends Component
     * @returns {void}
     */
     onFloorDoorsOpened: (commands, floor) => {
-      this.setState({ areDoorsOpen: false });
+      
     },
 
     /**
