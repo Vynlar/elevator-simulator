@@ -16,7 +16,7 @@ class EmergencyModeController extends Component
     this.props.registerListeners(this.listeners);
   }
 
-  clearOutsideIndicators = (commands) => {
+  clearOutsideDirectionIndicators = (commands) => {
           // Clear the outside direction indicators
           R.pipe(
             R.range(0),
@@ -58,7 +58,7 @@ class EmergencyModeController extends Component
       }
 
 
-      this.clearOutsideIndicators(commands);
+      this.clearOutsideDirectionIndicators(commands);
 
       // Update the cabin direction indicator with the current direction, same as SMC
       commands.setCabinDirectionIndicator(state => {
@@ -126,6 +126,7 @@ class EmergencyModeController extends Component
     * @returns {void}
     */
     onFloorArrival: (commands) => {
+      console.log("Arrived at floor");
       // update each floor's floor indicator
       R.pipe(
         R.range(0),
@@ -134,27 +135,8 @@ class EmergencyModeController extends Component
         })
       )(numFloors);
 
-      // update outside button lights
-      // TODO fix the below from error, also happens in SMC
-      // if (this.state.isGoingUp) {
-      //   commands.setOutsideButtonLights(state => {
-      //     const currentFloor = state.floor;
-      //     return ({
-      //       floor: state.floor,
-      //       up: false,
-      //       down: state.outside[currentFloor].buttonDown,
-      //     });
-      //   });
-      // } else {
-      //   commands.setOutsideButtonLights(state => {
-      //     const currentFloor = state.floor;
-      //     return ({
-      //       floor: state.floor,
-      //       down: false,
-      //       up: state.outside[currentFloor].buttonUp,
-      //     });
-      //   });
-      // }
+      // update direction indicators
+      this.clearOutsideDirectionIndicators(commands);      
 
       // update cabin floor indicator
       commands.setCabinFloorIndicator(state => state.floor);
