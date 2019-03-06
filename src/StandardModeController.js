@@ -14,62 +14,114 @@ class StandardModeController extends Component
     areDoorsOpen: false,
   }
 
+  isQueueEmpty = () =>
+    R.all(
+      R.pipe(
+        R.values, R.all(R.equals(false))
+      )
+    )(this.state.queue);
+
   componentDidMount = () =>
   {
     this.props.registerListeners(this.listeners);
   }
 
-
-  addRequest = (type, floor, commands) =>
-  {
+  addRequest = (type, floor, commands) => {
     this.setState(R.assocPath(['queue', floor, type], true),
       () => this.goToNextFloor(commands));
   }
 
-  clearRequest = (type, floor) =>
-  {
+  clearRequest = (type, floor) => {
     this.setState(R.assocPath(['queue', floor, type], false));
   }
 
-  getNextDestination = (state) =>
-  {
-    const nextFloor = R.findIndex(R.pipe(R.values, R.any(R.identity)))(this.state.queue);
-    return nextFloor;
-    //TODO: implement a not-stupid queueing alg
+  getNextDestination = (state) => {
+    const nextDirection = this.shouldChangeDirection(state.floor) ?
+        !this.state.isGoingUp : this.state.isGoingUp;
+
+    this.setState({ isGoingUp: nextDirection });
+
+    // find the next "same direction" request
+    const sameDirectionFloors = this.getSameDirectionFloors(state.floor, nextDirection);
+    const direction = nextDirection ? 'up' : 'down';
+
+    const validFloors =
+    R.pipe(
+        // turn array [a, b, c] into [[0, a], [1, b], [2, c]]
+        R.addIndex(R.map)((x, index) => [index, x]),
+        // Filters based on the requests
+        R.filter(([index, requests]) =>
+            requests[direction] || requests.undirected
+        ),
+        R.map(R.head),
+    )(sameDirectionFloors);
+
+    if(direction === "up") {
+      const result = validFloors[0] + state.floor + 1;
+      console.log(result);
+      return result;
+    } else {
+      return R.last(validFloors);
+    }
   }
 
-  goToNextFloor = (commands) =>
-  {
-    if ( this.state.areDoorsOpen || this.state.moving )
-    {
+  goToNextFloor = (commands) => {
+    if ( this.state.areDoorsOpen || this.state.moving ) return;
+    if (this.isQueueEmpty()) {
+      // This is the idle state
+      console.log('going into idle');
+
+      // Clear the cabin direction indicators
+      commands.setCabinDirectionIndicator(() => ({ up: false, down: false }));
+
+      // Clear the outside direction indicators
+      R.pipe(
+        R.range(0),
+        R.forEach((floor) => {
+          commands.setOutsideDirectionIndicator(state => ({
+            floor,
+            up: false,
+            down: false,
+          }))
+        })
+      )(numFloors);
       return;
     }
 
-    this.setState({moving: true},
-      () => commands.goToFloor(
-        (state) => this.getNextDestination(state),
-        (state) => {
+
+    // Update the cabin direction indicator with the current direction
+    commands.setCabinDirectionIndicator(state => {
+      const nextFloor = this.getNextDestination(state);
+      const goingUp = nextFloor > state.floor;
+
+      // Keep track of which floor we are going to
+      this.setState({ isGoingUp: goingUp });
+
+      return ({
+        up: goingUp,
+        down: !goingUp,
+      });
+    });
+
+    R.pipe(
+      R.range(0),
+      R.forEach((floor) => {
+        commands.setOutsideDirectionIndicator(state => {
           const nextFloor = this.getNextDestination(state);
+          const goingUp = nextFloor > state.floor;
 
-          const floorIndicatorF = (floor) => ({floor,
-            up: (state.floor < nextFloor),
-            down: (state.floor > nextFloor)});
-          const cabinIndicatorF = () => ({
-            up: (state.floor < nextFloor),
-            down: (state.floor > nextFloor)});
+          return ({
+            floor,
+            up: goingUp,
+            down: !goingUp,
+          })
+        });
+      })
+    )(numFloors);
 
-          // Within the callback, setting the isGoingUp property within the controller state
-          this.setState({isGoingUp: nextFloor > state.floor});
-
-          R.pipe(
-            R.range(0),
-            R.forEach((floor) => {
-              commands.setOutsideDirectionIndicator((() => floorIndicatorF(floor)));
-            })
-          )(numFloors);
-          commands.setCabinDirectionIndicator(cabinIndicatorF);
-        }));
-
+    this.setState({ moving: true },
+      () => commands.goToFloor((state) => this.getNextDestination(state))
+    );
   }
 
   closeDoors = (commands) =>
@@ -85,6 +137,29 @@ class StandardModeController extends Component
       commands.setCabinDoors(R.T);
       commands.setFloorDoors(state => ({ floor: state.floor, isDoorsOpen: true }))
     }
+  }
+
+  getSameDirectionFloors = (floor, isGoingUp) => {
+    const { queue } = this.state;
+    const remainingFloors = isGoingUp ? (
+      R.slice(floor + 1, Infinity)(queue)
+    ) : (
+      R.slice(0, floor)(queue)
+    );
+
+    return remainingFloors;
+  }
+
+  shouldChangeDirection = (floor) => {
+    const { queue, isGoingUp } = this.state;
+    // get the remaining floors
+    const sameDirectionFloors = this.getSameDirectionFloors(floor, isGoingUp);
+    // check for requests, if there are any, return false, else true
+    return R.pipe(
+      R.map(R.values), // turn into 2d boolean array
+      R.flatten, // turn into 1d boolean array
+      R.none(R.equals(true)), // make sure none are true
+    )(sameDirectionFloors);
   }
 
   listeners = (() => ({
@@ -145,8 +220,7 @@ class StandardModeController extends Component
     * @returns {void}
     */
     onFloorArrival: (commands) => {
-      // Open the doors
-      // TODO: update each floor's direction indicator
+      console.log(this.state.queue);
       // update each floor's floor indicator
       R.pipe(
         R.range(0),
@@ -159,23 +233,34 @@ class StandardModeController extends Component
       if (this.state.isGoingUp) {
         commands.setOutsideButtonLights(state => {
           const currentFloor = state.floor;
-          console.log(this.state.isGoingUp);
-          return ({floor:state.floor, up:false, down:state.outside[currentFloor].buttonDown});
+          return ({
+            floor: state.floor,
+            up: false,
+            down: state.outside[currentFloor].buttonDown,
+          });
         });
       } else {
         commands.setOutsideButtonLights(state => {
           const currentFloor = state.floor;
-          return ({floor:state.floor, down:false, up:state.outside[currentFloor].buttonUp});
+          return ({
+            floor: state.floor,
+            down: false,
+            up: state.outside[currentFloor].buttonUp,
+          });
         });
       }
-
 
       // update cabin floor indicator
       commands.setCabinFloorIndicator(state => state.floor);
 
-      this.setState({moving: false}, () => this.openDoorsAttempt(commands));
-      // TODO: update cabin's direction indicator
-      // TODO: remove from queue
+      // Open the doors
+      this.setState({ moving: false }, () => this.openDoorsAttempt(commands));
+
+      // remove from queue
+      commands.getLatestState(state => {
+        this.clearRequest(this.state.isGoingUp ? 'up' : 'down', state.floor);
+        this.clearRequest('undirected', state.floor);
+      });
     },
 
     /**
@@ -184,7 +269,7 @@ class StandardModeController extends Component
     * @returns {void}
     */
     onCabinDoorsClosed: (commands) => {
-      this.setState({areDoorsOpen: false}, () => this.goToNextFloor(commands));
+      this.setState({ areDoorsOpen: false }, () => this.goToNextFloor(commands));
     },
 
     /**
@@ -194,7 +279,7 @@ class StandardModeController extends Component
     */
     onCabinDoorsOpened: (commands) => {
       if ( this.state.moving )
-        console.error("Doors opened while moving");
+        throw new Error("Doors opened while moving");
 
       this.setState({areDoorsOpen: true}, () =>
         setTimeout(() => this.closeDoors(commands), 3 * second));

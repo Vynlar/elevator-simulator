@@ -4,7 +4,7 @@ import * as R from 'ramda';
 import GraphicalElevator from './GraphicalElevator';
 
 export const numFloors = 5;
-export const second = 500;
+export const second = 5000;
 
 export const FIRE_KEY = {
   OFF: 'OFF',
@@ -61,7 +61,7 @@ class Elevator extends Component {
             cb(self.state);
           }
         );
-      }, second * Math.abs(newFloor - self.state.floor) * 2)
+      }, second)
     },
     /**
      * setCabinDoors
@@ -167,6 +167,14 @@ class Elevator extends Component {
         return R.assocPath(['cabin', 'buttons', floor, 'lightOn'], value)(state);
       }, () => cb(self.state));
     },
+
+    /**
+     * getLatestState
+     * @param {func} f (state) => ({ floor:number, value:number })
+     */
+    getLatestState(cb) {
+      self.setState(() => {}, () => cb(self.state));
+    }
   }))(this)
 
   render() {

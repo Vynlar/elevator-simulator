@@ -32,7 +32,6 @@ export default class Controller extends Component {
   }
 
   listeners = (() => ({
-
     /**
      * onFireAlarm
      * Called once when the fire alarm is first triggered
