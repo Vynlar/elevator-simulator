@@ -173,14 +173,20 @@ class Elevator extends Component {
      * @param {func} f (state) => ({ floor:number, value:number })
      */
     getLatestState(cb) {
-      self.setState(() => {}, () => cb(self.state));
+      self.setState(() => ({}), () => cb(self.state));
     }
   }))(this)
 
   render() {
     return (
       <div>
-          <GraphicalElevator numFloors={numFloors} state={this.state} />
+          <GraphicalElevator
+            numFloors={numFloors}
+            state={this.state}
+            onFloorCall={(...args) =>
+              this.props.listeners.onFloorCall(this.commands, ...args)
+            }
+          />
           <div>
               <h2>General</h2>
               <div>

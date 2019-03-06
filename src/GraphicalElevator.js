@@ -73,9 +73,10 @@ const Doors = styled.div`
         width: 50%;
         height: 100%;
         background: grey;
-        transform: translateX(${({ open }) => open ? '-100%' : '0'});
-        transition: transform 2s;
         border-right: 1px solid rgb(100, 100, 100);
+
+        transform: translateX(${({ open }) => open ? '-100%' : '0'});
+        transition: transform 1s;
     }
 
     &::after {
@@ -87,9 +88,9 @@ const Doors = styled.div`
         right: 0;
         top: 0;
         background: grey;
+    border-left: 1px solid rgb(100, 100, 100);
         transform: translateX(${({ open }) => open ? '100%' : '0'});
-        transition: transform 2s;
-        border-left: 1px solid rgb(100, 100, 100);
+        transition: transform 1s;
     }
 `;
 
@@ -109,6 +110,7 @@ const Button = styled.div`
     height: 35px;
     background: rgb(100, 100, 100);
     border-radius: 50%;
+    cursor: pointer;
     border: 3px solid ${({ on }) => on ? 'rgb(200, 0, 0)' : 'rgb(100, 0, 0)'};
 
     &:first-child {
@@ -119,10 +121,10 @@ const Button = styled.div`
 const Cabin = styled.div`
 `;
 
-function GraphicalElevator({ numFloors, state }) {
+function GraphicalElevator({ numFloors, state, onFloorCall }) {
   return (
     <Container>
-        {state.outside.map(floor => (
+        {state.outside.map((floor, index) => (
           <Floor>
               <Indicators>
                 <FloorIndicator>
@@ -135,8 +137,8 @@ function GraphicalElevator({ numFloors, state }) {
               </Indicators>
               <Doors open={floor.doorsOpen} />
               <OutsideButtons>
-                  <Button on={floor.upButton} />
-                  <Button on={floor.downButton} />
+                  <Button on={floor.upButton} onClick={() => onFloorCall(index, true, false)} />
+                  <Button on={floor.downButton} onClick={() => onFloorCall(index, false, true)} />
               </OutsideButtons>
           </Floor>
         ))}
