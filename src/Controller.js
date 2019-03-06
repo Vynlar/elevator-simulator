@@ -81,6 +81,12 @@ export default class Controller extends Component {
         this.state.childListeners.onFireKeyChange(commands, position);
       }
     },
+    onFireKeyChange: (commands, position) => {
+      // TODO: change to emergency mode if ON
+      if(this.state.isEmergency) {
+        this.state.childListeners.onFireKeyChange(commands, position);
+      }
+    },
   })).bind(this)();
 
   // Feel free to add more functions as they are needed. Here's an example:
