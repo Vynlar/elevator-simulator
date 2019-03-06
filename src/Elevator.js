@@ -191,6 +191,7 @@ class Elevator extends Component {
               <h2>Override Events</h2>
               <button onClick={() => this.props.listeners.onFloorCall(this.commands, 3, true, false)}>Floor 3 button up </button>
               <button onClick={() => this.props.listeners.onFireAlarm(this.commands, this.state.floor)}>Simulate Fire Alarm</button>
+              <button onClick={() => this.props.listeners.onCabinRequest(this.commands, 4)}> Cabin Floor 4 button</button>
               <button onClick={() => this.props.listeners.onDoorOpenRequest(this.commands)}>Open cabin doors (cabin button)</button>
               <button onClick={() => this.props.listeners.onDoorCloseRequest(this.commands)}>Close cabin doors (cabin button)</button>
           </div>

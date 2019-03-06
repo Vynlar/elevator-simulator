@@ -44,6 +44,7 @@ export default class Controller extends Component {
       console.log("In emergency ", this.state.isEmergency);
       setTimeout((() => this.setState({isEmergency: false})), EMERGENCY_TIMEOUT);
       // I think this should be in Emergency Mode Controller, but for simplicity, it is here now
+      
       // execute initial routine service
       // if on first floor, just open doors
       if(currentElevatorFloor === 0) {
