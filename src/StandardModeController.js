@@ -44,7 +44,6 @@ class StandardModeController extends Component
     // find the next "same direction" request
     const sameDirectionFloors = this.getSameDirectionFloors(state.floor, nextDirection);
     const direction = nextDirection ? 'up' : 'down';
-
     const validFloors =
     R.pipe(
         // turn array [a, b, c] into [[0, a], [1, b], [2, c]]
@@ -56,9 +55,30 @@ class StandardModeController extends Component
         R.map(R.head),
     )(sameDirectionFloors);
 
+    // If there are no more requests in the same direction, get the highest (if currently going up)
+    // or lowest (if going down), request in the opposite direction.
+    if ( validFloors.length === 0 ) {
+      const oppositeDirection = ! nextDirection ? 'up' : 'down';
+      const validOppositeRequests =
+      R.pipe(
+          // turn array [a, b, c] into [[0, a], [1, b], [2, c]]
+          R.addIndex(R.map)((x, index) => [index, x]),
+          // Filters based on the requests
+          R.filter(([index, requests]) =>
+              requests[oppositeDirection] || requests.undirected
+          ),
+          R.map(R.head),
+      )(sameDirectionFloors);
+      if(oppositeDirection === "up") {
+        const result = validOppositeRequests[0];
+        return result;
+      } else {
+        return R.last(validOppositeRequests) + state.floor + 1;
+      }
+    }
+
     if(direction === "up") {
       const result = validFloors[0] + state.floor + 1;
-      console.log(result);
       return result;
     } else {
       return R.last(validFloors);
@@ -220,7 +240,6 @@ class StandardModeController extends Component
     * @returns {void}
     */
     onFloorArrival: (commands) => {
-      console.log(this.state.queue);
       // update each floor's floor indicator
       R.pipe(
         R.range(0),
@@ -258,7 +277,16 @@ class StandardModeController extends Component
 
       // remove from queue
       commands.getLatestState(state => {
-        this.clearRequest(this.state.isGoingUp ? 'up' : 'down', state.floor);
+        const shouldChangeDirection = this.shouldChangeDirection(state.floor);
+        if ( shouldChangeDirection )
+        {
+          this.clearRequest('up', state.floor);
+          this.clearRequest('down', state.floor);
+        }
+        else {
+          this.clearRequest(this.state.isGoingUp ? 'up' : 'down', state.floor);
+        }
+
         this.clearRequest('undirected', state.floor);
       });
     },
