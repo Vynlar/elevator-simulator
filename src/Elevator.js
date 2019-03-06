@@ -56,7 +56,6 @@ class Elevator extends Component {
      * @returns {void}
      */
     goToFloor (f, cb = () => {}) {
-      const newFloor = f(self.state.floor);
       setTimeout(() => {
         self.setState(
           (state) => ({ floor: f(state) }),

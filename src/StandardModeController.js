@@ -57,7 +57,7 @@ class StandardModeController extends Component
 
     // If there are no more requests in the same direction, get the highest (if currently going up)
     // or lowest (if going down), request in the opposite direction.
-    if ( validFloors.length === 0 ) {
+    if ( validFloors.length === 0) {
       const oppositeDirection = ! nextDirection ? 'up' : 'down';
       const validOppositeRequests =
       R.pipe(
@@ -69,6 +69,10 @@ class StandardModeController extends Component
           ),
           R.map(R.head),
       )(sameDirectionFloors);
+
+      if ( validOppositeRequests.length === 0 )
+        return state.floor;
+
       if(oppositeDirection === "up") {
         const result = validOppositeRequests[0];
         return result;
@@ -89,7 +93,6 @@ class StandardModeController extends Component
     if ( this.state.areDoorsOpen || this.state.moving ) return;
     if (this.isQueueEmpty()) {
       // This is the idle state
-      console.log('going into idle');
 
       // Clear the cabin direction indicators
       commands.setCabinDirectionIndicator(() => ({ up: false, down: false }));
@@ -107,7 +110,6 @@ class StandardModeController extends Component
       )(numFloors);
       return;
     }
-
 
     // Update the cabin direction indicator with the current direction
     commands.setCabinDirectionIndicator(state => {
@@ -174,12 +176,21 @@ class StandardModeController extends Component
     const { queue, isGoingUp } = this.state;
     // get the remaining floors
     const sameDirectionFloors = this.getSameDirectionFloors(floor, isGoingUp);
-    // check for requests, if there are any, return false, else true
-    return R.pipe(
+      // check for requests, if there are any, return false, else true
+    const res = R.pipe(
       R.map(R.values), // turn into 2d boolean array
       R.flatten, // turn into 1d boolean array
       R.none(R.equals(true)), // make sure none are true
     )(sameDirectionFloors);
+
+    if ( ! res )
+    {
+      return R.pipe(
+        R.values,
+        R.any(R.equals(true))
+      )(queue[floor]);
+    }
+    return res;
   }
 
   listeners = (() => ({
@@ -260,6 +271,7 @@ class StandardModeController extends Component
       // remove from queue
       commands.getLatestState(state => {
         const shouldChangeDirection = this.shouldChangeDirection(state.floor);
+      
         if ( shouldChangeDirection )
         {
           this.clearRequest('up', state.floor);
