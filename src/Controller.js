@@ -38,10 +38,38 @@ export default class Controller extends Component {
      * @param {object} commands The object of command functions to control the elevator (see ./Elevator.js for documentation)
      * @returns {void}
      */
-    onFireAlarm: (commands) => {
+    onFireAlarm: (commands, currentElevatorFloor) => {
       this.setState({isEmergency: true});
       console.log("FIRE! FIRE!")
+      console.log("In emergency ", this.state.isEmergency);
       setTimeout((() => this.setState({isEmergency: false})), EMERGENCY_TIMEOUT);
+      // I think this should be in Emergency Mode Controller, but for simplicity, it is here now
+      // execute initial routine service
+      // if on first floor, just open doors
+      if(currentElevatorFloor === 0) {
+        commands.setCabinDoors(R.T);
+        commands.setFloorDoors(state => ({ floor: state.floor, isDoorsOpen: true }))
+        console.log("Already on first floor")
+      } else {
+        commands.setCabinDoors(R.F); // close doors
+        commands.setFloorDoors(state => ({ floor: state.floor, isDoorsOpen: false }), () => {
+          // after closing floor doors, update outside lights
+          commands.setCabinFloorIndicator(state => 0);
+          // TODO: Fix this bug, same bug as in normal mode when trying to go down
+          // commands.setOutsideFloorIndicator(state => 0);
+          // commands.setOutsideDirectionIndicator(state => ({
+          //   up: false,
+          //   down: true,
+          // }));
+        })
+        commands.goToFloor((state) => 0, () => {
+          commands.setCabinDoors(R.T); // close doors
+          commands.setFloorDoors(state => ({ floor: state.floor, isDoorsOpen: true }));
+        }); // take in the state and just go to floor 0
+        console.log("Not first floor");
+      }
+
+
     },
   })).bind(this)();
 

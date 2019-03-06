@@ -2,7 +2,11 @@ import React, {Component} from 'react';
 
 class EmergencyModeController extends Component
 {
-  
+
+  emergencyModeState = {
+    executedEmergencyRoutine: false,
+    areDoorsOpen: false,
+  }
 
   componentDidMount = () =>
   {
@@ -19,6 +23,7 @@ class EmergencyModeController extends Component
     * @returns {void}
     */
     onFloorCall: (commands, floor, up, down) => {
+      // will do nothing 
     },
 
     /**
@@ -60,7 +65,6 @@ class EmergencyModeController extends Component
     * @returns {void}
     */
     onCabinDoorsClosed: (commands) => {
-      this.goToNextFloor();
     },
 
     /**
@@ -79,6 +83,7 @@ class EmergencyModeController extends Component
     * @returns {void}
     */
     onFloorDoorsOpened: (commands, floor) => {
+
     },
 
     /**
@@ -89,6 +94,7 @@ class EmergencyModeController extends Component
     */
     onFloorDoorsClosed: (commands, floor) => {
     },
+
   })).bind(this)();
 
   render()
