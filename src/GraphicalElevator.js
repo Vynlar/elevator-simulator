@@ -137,8 +137,8 @@ function GraphicalElevator({ numFloors, state, onFloorCall }) {
               </Indicators>
               <Doors open={floor.doorsOpen} />
               <OutsideButtons>
-                  <Button on={floor.buttonUp} onClick={() => onFloorCall(index, true, false)} />
-                  <Button on={floor.buttonDown} onClick={() => onFloorCall(index, false, true)} />
+                  <Button on={floor.upButton} onClick={() => onFloorCall(index, true, false)} />
+                  <Button on={floor.downButton} onClick={() => onFloorCall(index, false, true)} />
               </OutsideButtons>
           </Floor>
         ))}

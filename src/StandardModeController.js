@@ -200,7 +200,10 @@ class StandardModeController extends Component
 
       this.addRequest(up ? "up": "down", floor, commands);
 
-      commands.setOutsideButtonLights(() => ({floor, up, down}));
+      commands.setOutsideButtonLights((state) => ({floor, 
+        up: (up || state.outside[floor].upButton), 
+        down: (down || state.outside[floor].downButton)})
+      );
     },
 
     /**
@@ -275,8 +278,8 @@ class StandardModeController extends Component
             const currentFloor = state.floor;
             return ({
               floor: currentFloor,
-              up: this.state.isGoingUp ? false : state.outside[currentFloor].buttonUp,
-              down: ! this.state.isGoingUp ? false : state.outside[currentFloor].buttonDown,
+              up: this.state.isGoingUp ? false : state.outside[currentFloor].upButton,
+              down: ! this.state.isGoingUp ? false : state.outside[currentFloor].downButton,
             });
           });
         }

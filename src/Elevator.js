@@ -156,8 +156,8 @@ class Elevator extends Component {
       self.setState(state => {
         const { floor, up, down } = f(state);
         return R.pipe(
-          R.assocPath(['outside', floor, 'buttonUp'], up),
-          R.assocPath(['outside', floor, 'buttonDown'], down),
+          R.assocPath(['outside', floor, 'upButton'], up),
+          R.assocPath(['outside', floor, 'downButton'], down),
         )(state);
       }, () => cb(self.state));
     },
@@ -260,10 +260,10 @@ class Elevator extends Component {
                             Doors open: {this.state.outside[floor].doorsOpen ? 'OPEN' : 'CLOSED'}
                         </div>
                         <div>
-                            Button Up: {this.state.outside[floor].buttonUp ? 'ON' : 'OFF'}
+                            Button Up: {this.state.outside[floor].upButton ? 'ON' : 'OFF'}
                         </div>
                         <div>
-                            Button Down: {this.state.outside[floor].buttonDown ? 'ON' : 'OFF'}
+                            Button Down: {this.state.outside[floor].downButton ? 'ON' : 'OFF'}
                         </div>
                         <div>
                             Direction Indicator ^: {this.state.outside[floor].up? 'ON' : 'OFF'}
