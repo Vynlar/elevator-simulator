@@ -4,7 +4,6 @@ import { numFloors } from './Elevator';
 
 class EmergencyModeController extends Component
 {
-
   state = {
     executedEmergencyRoutine: false,
     areDoorsOpen: true,               // opposite of SMC, our base state is the doors are open
@@ -17,21 +16,29 @@ class EmergencyModeController extends Component
   }
 
   clearOutsideDirectionIndicators = (commands) => {
-          // Clear the outside direction indicators
-          R.pipe(
-            R.range(0),
-            R.forEach((floor) => {
-              commands.setOutsideDirectionIndicator(state => ({
-                floor,
-                up: false,
-                down: false,
-              }))
-            })
-          )(numFloors);
-          return;
+    // Clear the outside direction indicators
+    R.pipe(
+      R.range(0),
+      R.forEach((floor) => {
+        commands.setOutsideDirectionIndicator(state => ({
+          floor,
+          up: false,
+          down: false,
+        }))
+      })
+    )(numFloors);
+    return;
   }
-  
+
   listeners = (() => ({
+    /**
+    * onFireKeyChange
+    * @param {object} commands The object of command functions to control the elevator (see ./Elevator.js for documentation)
+     * @param {string} position one of { 'ON', 'OFF', 'RESET' }
+    */
+    onFireKeyChange: (commands, position) => {
+      console.log(position);
+    },
     /**
     * onFloorCall
     * @param {object} commands The object of command functions to control the elevator (see ./Elevator.js for documentation)
@@ -42,6 +49,15 @@ class EmergencyModeController extends Component
     */
     onFloorCall: (commands, floor, up, down) => {
       // will do nothing, unless we setup fire key on each floor to request the elevator
+    },
+
+    /**
+     * onFireAlarm
+     * Called once when the fire alarm is first triggered
+     * @param {object} commands The object of command functions to control the elevator (see ./Elevator.js for documentation)
+     * @returns {void}
+     */
+    onFireAlarm: (commands, currentElevatorFloor) => {
     },
 
     /**
@@ -57,40 +73,43 @@ class EmergencyModeController extends Component
         return
       }
 
+      commands.getLatestState(state => {
+        if(state.cabin.fireKeyPosition === "ON") {
+          this.clearOutsideDirectionIndicators(commands);
 
-      this.clearOutsideDirectionIndicators(commands);
-
-      // Update the cabin direction indicator with the current direction, same as SMC
-      commands.setCabinDirectionIndicator(state => {
-        const goingUp = requestedFloor > state.floor;
-
-        // Keep track of which floor we are going to
-        this.setState({ isGoingUp: goingUp });
-
-        return ({
-          up: goingUp,
-          down: !goingUp,
-        });
-      });
-      
-      R.pipe(
-        R.range(0),
-        R.forEach((floor) => {
-          commands.setOutsideDirectionIndicator(state => {
+          // Update the cabin direction indicator with the current direction, same as SMC
+          commands.setCabinDirectionIndicator(state => {
             const goingUp = requestedFloor > state.floor;
 
+            // Keep track of which floor we are going to
+            this.setState({ isGoingUp: goingUp });
+
             return ({
-              floor,
               up: goingUp,
               down: !goingUp,
-            })
+            });
           });
-        })
-      )(numFloors);
 
-      // simply go to requested floor, don't open any doors
-      console.log("Going straight to: ", requestedFloor);
-      commands.goToFloor((state) => requestedFloor, () => {}); 
+          R.pipe(
+            R.range(0),
+            R.forEach((floor) => {
+              commands.setOutsideDirectionIndicator(state => {
+                const goingUp = requestedFloor > state.floor;
+
+                return ({
+                  floor,
+                  up: goingUp,
+                  down: !goingUp,
+                })
+              });
+            })
+          )(numFloors);
+
+          // simply go to requested floor, don't open any doors
+          console.log("Going straight to: ", requestedFloor);
+          commands.goToFloor((state) => requestedFloor, () => {}); 
+        }
+      });
     },
 
     /**
@@ -99,11 +118,15 @@ class EmergencyModeController extends Component
     * @returns {void}
     */
     onDoorOpenRequest: (commands) => {
-      // don't close doors after any time
-      this.setState({areDoorsOpen: true});
-      commands.setCabinDoors(R.T);
-      commands.setFloorDoors(state => ({ floor: state.floor, isDoorsOpen: true }));
-      console.log("Open doors");
+      commands.getLatestState(state => {
+        if(state.cabin.fireKeyPosition === "ON") {
+          // don't close doors after any time
+          this.setState({areDoorsOpen: true});
+          commands.setCabinDoors(R.T);
+          commands.setFloorDoors(state => ({ floor: state.floor, isDoorsOpen: true }));
+          console.log("Open doors");
+        }
+      });
     },
 
     /**
@@ -112,12 +135,15 @@ class EmergencyModeController extends Component
     * @returns {void}
     */
     onDoorCloseRequest: (commands) => {
-      this.setState({areDoorsOpen: false});
-      commands.setCabinDoors(R.F);
-      commands.setFloorDoors(state => ({ floor: state.floor, isDoorsOpen: false }));
-      console.log("Close doors");
-      console.log(this.state.areDoorsOpen);
-
+      commands.getLatestState(state => {
+        if(state.cabin.fireKeyPosition === "ON") {
+          this.setState({areDoorsOpen: false});
+          commands.setCabinDoors(R.F);
+          commands.setFloorDoors(state => ({ floor: state.floor, isDoorsOpen: false }));
+          console.log("Close doors");
+          console.log(this.state.areDoorsOpen);
+        }
+      });
     },
 
     /**

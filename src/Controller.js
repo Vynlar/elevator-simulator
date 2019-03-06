@@ -26,10 +26,14 @@ export default class Controller extends Component {
     arraysAreCoolToo: [ 1, 2, 3, 4 ],
   }
 
-  registerListeners = listeners =>
+  registerListeners = (listeners, cb = () => {}) =>
   {
-    this.setState({childListeners: listeners});
+    this.setState({ childListeners: listeners }, cb);
   }
+
+  goToFirstFloor = (commands, currentElevatorFloor) => {
+  }
+
 
   listeners = (() => ({
     /**
@@ -39,12 +43,13 @@ export default class Controller extends Component {
      * @returns {void}
      */
     onFireAlarm: (commands, currentElevatorFloor) => {
-      this.setState({isEmergency: true});
+
+      // Enable emergency
+      this.setState({ isEmergency: true });
       console.log("FIRE! FIRE!")
       console.log("In emergency ", this.state.isEmergency);
-      setTimeout((() => this.setState({isEmergency: false})), EMERGENCY_TIMEOUT);
-      // I think this should be in Emergency Mode Controller, but for simplicity, it is here now
-      
+      setTimeout((() => this.setState({ isEmergency: false })), EMERGENCY_TIMEOUT);
+
       // execute initial routine service
       // if on first floor, just open doors
       if(currentElevatorFloor === 0) {
@@ -57,11 +62,11 @@ export default class Controller extends Component {
           // after closing floor doors, update outside lights
           commands.setCabinFloorIndicator(state => 0);
           // TODO: Fix this bug, same bug as in normal mode when trying to go down
-          // commands.setOutsideFloorIndicator(state => 0);
-          // commands.setOutsideDirectionIndicator(state => ({
-          //   up: false,
-          //   down: true,
-          // }));
+          /* commands.setOutsideFloorIndicator(state => ({ floor: 0, value: 0 }));
+           * commands.setOutsideDirectionIndicator(state => ({
+           *   up: false,
+           *   down: true,
+           * })); */
         })
         commands.goToFloor((state) => 0, () => {
           commands.setCabinDoors(R.T); // close doors
@@ -69,8 +74,12 @@ export default class Controller extends Component {
         }); // take in the state and just go to floor 0
         console.log("Not first floor");
       }
-
-
+    },
+    onFireKeyChange: (commands, position) => {
+      // TODO: change to emergency mode if ON
+      if(this.state.isEmergency) {
+        this.state.childListeners.onFireKeyChange(commands, position);
+      }
     },
   })).bind(this)();
 

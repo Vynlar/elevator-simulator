@@ -49,6 +49,11 @@ class Elevator extends Component {
     }
   }
 
+  changeKeyPosition = (newPosition) => {
+    this.setState(R.assocPath(['cabin', 'fireKeyPosition'], newPosition));
+    this.props.listeners.onFireKeyChange(this.commands, newPosition);
+  }
+
   commands = ((self) => ({
     /**
      * goToFloor
@@ -190,29 +195,58 @@ class Elevator extends Component {
               this.props.listeners.onFloorCall(this.commands, ...args)
             }
           />
-            <div>
+          <div>
               <h2>Override Events</h2>
               <button onClick={() => this.props.listeners.onFloorCall(this.commands, 3, true, false)}>Floor 3 button up </button>
               <button onClick={() => this.props.listeners.onFireAlarm(this.commands, this.state.floor)}>Simulate Fire Alarm</button>
               <button onClick={() => this.props.listeners.onDoorOpenRequest(this.commands)}>Open cabin doors (cabin button)</button>
               <button onClick={() => this.props.listeners.onDoorCloseRequest(this.commands)}>Close cabin doors (cabin button)</button>
-              <ui style={listStyle}>
-                <li>
-                  <button onClick={() => this.props.listeners.onCabinRequest(this.commands, 0)}> Cabin Floor 0 button</button>
-                </li>
-                <li>
-                  <button onClick={() => this.props.listeners.onCabinRequest(this.commands, 1)}> Cabin Floor 1 button</button>
-                </li>
-                <li>
-                  <button onClick={() => this.props.listeners.onCabinRequest(this.commands, 2)}> Cabin Floor 2 button</button>
-                </li>
-                <li>
-                  <button onClick={() => this.props.listeners.onCabinRequest(this.commands, 3)}> Cabin Floor 3 button</button>
-                </li>
-                <li>
-                  <button onClick={() => this.props.listeners.onCabinRequest(this.commands, 4)}> Cabin Floor 4 button</button>
-                </li>
-              </ui>
+              <div>
+                <label htmlFor="firekey">
+                    ON
+                    <input
+                      name="firekey"
+                      type="radio"
+                      value={FIRE_KEY.ON}
+                      checked={this.state.cabin.fireKeyPosition == "ON"}
+                      onChange={() => this.changeKeyPosition(FIRE_KEY.ON)} />
+                </label>
+                <label htmlFor="firekey">
+                    OFF
+                    <input
+                      name="firekey"
+                      type="radio"
+                      value={FIRE_KEY.OFF}
+                      checked={this.state.cabin.fireKeyPosition == "OFF"}
+                      onChange={() => this.changeKeyPosition(FIRE_KEY.OFF)} />
+                </label>
+                <label htmlFor="firekey">
+                    RESET
+                    <input
+                      name="firekey"
+                      type="radio"
+                      value={FIRE_KEY.RESET}
+                      checked={this.state.cabin.fireKeyPosition === "RESET"}
+                      onChange={() => this.changeKeyPosition(FIRE_KEY.RESET)} />
+                </label>
+              </div>
+              <ul style={listStyle}>
+                  <li>
+                      <button onClick={() => this.props.listeners.onCabinRequest(this.commands, 0)}> Cabin Floor 0 button</button>
+                  </li>
+                  <li>
+                      <button onClick={() => this.props.listeners.onCabinRequest(this.commands, 1)}> Cabin Floor 1 button</button>
+                  </li>
+                  <li>
+                      <button onClick={() => this.props.listeners.onCabinRequest(this.commands, 2)}> Cabin Floor 2 button</button>
+                  </li>
+                  <li>
+                      <button onClick={() => this.props.listeners.onCabinRequest(this.commands, 3)}> Cabin Floor 3 button</button>
+                  </li>
+                  <li>
+                      <button onClick={() => this.props.listeners.onCabinRequest(this.commands, 4)}> Cabin Floor 4 button</button>
+                  </li>
+              </ul>
           </div>
           <div>
               <h2>General</h2>
