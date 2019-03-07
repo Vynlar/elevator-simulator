@@ -1,14 +1,13 @@
-import React, { Component } from 'react';
-import * as R from 'ramda';
-import { numFloors, second } from './Elevator';
+import React, { Component } from "react";
+import * as R from "ramda";
+import { numFloors, second } from "./Elevator";
 
-import StandardModeController from './StandardModeController';
-import EmergencyModeController from './EmergencyModeController';
+import StandardModeController from "./StandardModeController";
+import EmergencyModeController from "./EmergencyModeController";
 
 const EMERGENCY_TIMEOUT = 30 * 60 * second;
 
 export default class Controller extends Component {
-
   /**
    * Initial state
    * Use this.setState() to change the state.
@@ -18,22 +17,19 @@ export default class Controller extends Component {
     isEmergency: false,
     childListeners: null,
 
-    put: 'whatever state you want here',
+    put: "whatever state you want here",
     itCanBeNumbers: 7,
     orEvenOtherObjects: {
-      like: 'this!',
+      like: "this!"
     },
-    arraysAreCoolToo: [ 1, 2, 3, 4 ],
-  }
+    arraysAreCoolToo: [1, 2, 3, 4]
+  };
 
-  registerListeners = (listeners, cb = () => {}) =>
-  {
+  registerListeners = (listeners, cb = () => {}) => {
     this.setState({ childListeners: listeners }, cb);
-  }
+  };
 
-  goToFirstFloor = (commands, currentElevatorFloor) => {
-  }
-
+  goToFirstFloor = (commands, currentElevatorFloor) => {};
 
   listeners = (() => ({
     /**
@@ -43,50 +39,58 @@ export default class Controller extends Component {
      * @returns {void}
      */
     onFireAlarm: (commands, currentElevatorFloor) => {
-
       // Enable emergency
       this.setState({ isEmergency: true });
-      console.log("FIRE! FIRE!")
+      console.log("FIRE! FIRE!");
       console.log("In emergency ", this.state.isEmergency);
-      setTimeout((() => this.setState({ isEmergency: false })), EMERGENCY_TIMEOUT);
+      setTimeout(
+        () => this.setState({ isEmergency: false }),
+        EMERGENCY_TIMEOUT
+      );
 
       // execute initial routine service
       // if on first floor, just open doors
-      if(currentElevatorFloor === 0) {
+      if (currentElevatorFloor === 0) {
         commands.setCabinDoors(R.T);
-        commands.setFloorDoors(state => ({ floor: state.floor, isDoorsOpen: true }))
-        console.log("Already on first floor")
+        commands.setFloorDoors(state => ({
+          floor: state.floor,
+          isDoorsOpen: true
+        }));
+        console.log("Already on first floor");
       } else {
         commands.setCabinDoors(R.F); // close doors
-        commands.setFloorDoors(state => ({ floor: state.floor, isDoorsOpen: false }), () => {
-          // after closing floor doors, update outside lights
-          commands.setCabinFloorIndicator(state => 0);
-          // TODO: Fix this bug, same bug as in normal mode when trying to go down
-          /* commands.setOutsideFloorIndicator(state => ({ floor: 0, value: 0 }));
-           * commands.setOutsideDirectionIndicator(state => ({
-           *   up: false,
-           *   down: true,
-           * })); */
-        })
-        commands.goToFloor((state) => 0, () => {
-          commands.setCabinDoors(R.T); // close doors
-          commands.setFloorDoors(state => ({ floor: state.floor, isDoorsOpen: true }));
-        }); // take in the state and just go to floor 0
+        commands.setFloorDoors(
+          state => ({ floor: state.floor, isDoorsOpen: false }),
+          () => {
+            // after closing floor doors, update outside lights
+            commands.setCabinFloorIndicator(state => 0);
+            // TODO: Fix this bug, same bug as in normal mode when trying to go down
+            /* commands.setOutsideFloorIndicator(state => ({ floor: 0, value: 0 }));
+             * commands.setOutsideDirectionIndicator(state => ({
+             *   up: false,
+             *   down: true,
+             * })); */
+          }
+        );
+        commands.goToFloor(
+          state => 0,
+          () => {
+            commands.setCabinDoors(R.T); // close doors
+            commands.setFloorDoors(state => ({
+              floor: state.floor,
+              isDoorsOpen: true
+            }));
+          }
+        ); // take in the state and just go to floor 0
         console.log("Not first floor");
       }
     },
     onFireKeyChange: (commands, position) => {
       // TODO: change to emergency mode if ON
-      if(this.state.isEmergency) {
+      if (this.state.isEmergency) {
         this.state.childListeners.onFireKeyChange(commands, position);
       }
-    },
-    onFireKeyChange: (commands, position) => {
-      // TODO: change to emergency mode if ON
-      if(this.state.isEmergency) {
-        this.state.childListeners.onFireKeyChange(commands, position);
-      }
-    },
+    }
   })).bind(this)();
 
   // Feel free to add more functions as they are needed. Here's an example:
@@ -101,16 +105,14 @@ export default class Controller extends Component {
     const Shell = this.props.shell;
     return (
       <div>
-        {this.state.isEmergency ? 
-          <EmergencyModeController 
-            registerListeners={this.registerListeners}
-          />
-        :
-          <StandardModeController
-            registerListeners={this.registerListeners}
-          />
-        }
-        <Shell listeners={{ ...this.state.childListeners, ...this.listeners }} />
+        {this.state.isEmergency ? (
+          <EmergencyModeController registerListeners={this.registerListeners} />
+        ) : (
+          <StandardModeController registerListeners={this.registerListeners} />
+        )}
+        <Shell
+          listeners={{ ...this.state.childListeners, ...this.listeners }}
+        />
       </div>
     );
   }
