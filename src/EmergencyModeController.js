@@ -127,6 +127,8 @@ class EmergencyModeController extends Component {
             })
           )(numFloors);
 
+          commands.setCabinRequestButtonLight(state => ({ floor: requestedFloor, value: true }));
+
           // simply go to requested floor, don't open any doors
           console.log("Going straight to: ", requestedFloor);
           commands.goToFloor(state => requestedFloor, () => {});
@@ -194,6 +196,7 @@ class EmergencyModeController extends Component {
 
       // update direction indicators
       this.clearOutsideDirectionIndicators(commands);
+      commands.setCabinRequestButtonLight(state => ({ floor: state.floor, value: false }));
 
       // update cabin floor indicator
       commands.setCabinFloorIndicator(state => state.floor);

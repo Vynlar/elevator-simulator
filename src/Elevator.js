@@ -111,7 +111,7 @@ class Elevator extends Component {
             cb(self.state);
           }
         );
-      }, second);
+      }, 2.5 * second);
     },
     /**
      * setCabinDoors

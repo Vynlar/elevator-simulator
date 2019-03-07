@@ -308,6 +308,7 @@ class StandardModeController extends Component {
         }
 
         this.clearRequest("undirected", state.floor);
+        commands.setCabinRequestButtonLight((state) => ({ floor: state.floor, value: false }));
       });
     },
 
