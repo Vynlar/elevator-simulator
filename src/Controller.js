@@ -5,7 +5,7 @@ import { numFloors, second } from "./Elevator";
 import StandardModeController from "./StandardModeController";
 import EmergencyModeController from "./EmergencyModeController";
 
-const EMERGENCY_TIMEOUT = 30 * 60 * second;
+const EMERGENCY_TIMEOUT = 30 * 60;
 
 export default class Controller extends Component {
   /**
@@ -16,6 +16,7 @@ export default class Controller extends Component {
   state = {
     isEmergency: false,
     childListeners: null,
+    secondsRemainingInEM: 0,
 
     put: "whatever state you want here",
     itCanBeNumbers: 7,
@@ -31,6 +32,18 @@ export default class Controller extends Component {
 
   goToFirstFloor = (commands, currentElevatorFloor) => {};
 
+  counterSeconds = (n, cb, cbFinished) => {
+    if (n < 0) {
+      cbFinished();
+      return;
+    } else {
+      setTimeout(() => {
+        this.counterSeconds(n - 1, cb, cbFinished);
+        cb(n);
+      }, 1000);
+    }
+  };
+
   listeners = (() => ({
     /**
      * onFireAlarm
@@ -43,9 +56,13 @@ export default class Controller extends Component {
       this.setState({ isEmergency: true });
       console.log("FIRE! FIRE!");
       console.log("In emergency ", this.state.isEmergency);
-      setTimeout(
-        () => this.setState({ isEmergency: false }),
-        EMERGENCY_TIMEOUT
+
+      this.counterSeconds(
+        EMERGENCY_TIMEOUT,
+        n => {
+          this.setState({ secondsRemainingInEM: n });
+        },
+        () => this.setState({ isEmergency: false })
       );
 
       // execute initial routine service
@@ -106,7 +123,15 @@ export default class Controller extends Component {
     return (
       <div>
         {this.state.isEmergency ? (
-          <EmergencyModeController registerListeners={this.registerListeners} />
+          <div>
+            <EmergencyModeController
+              registerListeners={this.registerListeners}
+            />
+            <h3>
+              {Math.floor(this.state.secondsRemainingInEM / 60)}:
+              {this.state.secondsRemainingInEM % 60}
+            </h3>
+          </div>
         ) : (
           <StandardModeController registerListeners={this.registerListeners} />
         )}

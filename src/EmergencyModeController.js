@@ -236,7 +236,7 @@ class EmergencyModeController extends Component {
   })).bind(this)();
 
   render() {
-    return <div />;
+    return <h1>Emergency Mode</h1>;
   }
 }
 
