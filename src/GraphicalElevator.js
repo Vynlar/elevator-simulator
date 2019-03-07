@@ -112,9 +112,15 @@ const Button = styled.div`
   border-radius: 50%;
   cursor: pointer;
   border: 3px solid ${({ on }) => (on ? "rgb(200, 0, 0)" : "rgb(100, 0, 0)")};
+  transition: box-shadow 0.15s, transform 0.15s;
 
   &:first-child {
     margin-bottom: 10px;
+  }
+
+  &:hover {
+    box-shadow: 0 3px 5px rgba(0,0,0,0.5);
+    transform: translateY(-3px);
   }
 `;
 

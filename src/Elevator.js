@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
+import styled from '@emotion/styled';
 import * as R from "ramda";
 import GraphicalElevator from "./GraphicalElevator";
 
@@ -15,6 +16,47 @@ export const FIRE_KEY = {
 const listStyle = {
   "list-style-type": "none"
 };
+
+const Container = styled.div`
+    display: flex;
+`;
+
+const Column = styled.div`
+    flex: 1;
+    padding: 0 ${({ padding }) => padding}px;
+    display: ${({ wrap }) => wrap ? 'flex' : 'block'};
+    flex-wrap: ${({ wrap }) => wrap ? 'wrap' : 'nowrap'};
+`;
+
+const Cell = styled.div`
+    padding: 16px;
+`;
+
+const CabinButtons = styled.div`
+    display: flex;
+    margin-top: 16px;
+`;
+
+const CabinButton = styled.div`
+    padding: 8px;
+    background: rgb(200, 200, 200);
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    margin-right: 10px;
+    border: 3px solid ${({ on }) => on ? 'red' : 'black'};
+    transition: box-shadow 0.15s, transform 0.15s;
+    cursor: pointer;
+
+    &:hover {
+        box-shadow: 0 3px 5px rgba(0,0,0,0.5);
+        transform: translateY(-3px);
+    }
+`;
 
 class Elevator extends Component {
   static propTypes = {
@@ -215,175 +257,138 @@ class Elevator extends Component {
 
   render() {
     return (
-      <div>
-        <GraphicalElevator
-          numFloors={numFloors}
-          state={this.state}
-          onFloorCall={(...args) =>
-            this.props.listeners.onFloorCall(this.commands, ...args)
-          }
-        />
-        <div>
-          <h2>Override Events</h2>
-          <button
-            onClick={() =>
-              this.props.listeners.onFireAlarm(this.commands, this.state.floor)
-            }
-          >
-            Simulate Fire Alarm
-          </button>
-          <button
-            onClick={() =>
-              this.props.listeners.onDoorOpenRequest(this.commands)
-            }
-          >
-            Open cabin doors (cabin button)
-          </button>
-          <button
-            onClick={() =>
-              this.props.listeners.onDoorCloseRequest(this.commands)
-            }
-          >
-            Close cabin doors (cabin button)
-          </button>
-          <div>
-            <label htmlFor="firekey">
-              ON
-              <input
-                name="firekey"
-                type="radio"
-                value={FIRE_KEY.ON}
-                checked={this.state.cabin.fireKeyPosition == "ON"}
-                onChange={() => this.changeKeyPosition(FIRE_KEY.ON)}
+      <Container>
+          <Column>
+              <GraphicalElevator
+                numFloors={numFloors}
+                state={this.state}
+                onFloorCall={(...args) =>
+                  this.props.listeners.onFloorCall(this.commands, ...args)
+                }
               />
-            </label>
-            <label htmlFor="firekey">
-              OFF
-              <input
-                name="firekey"
-                type="radio"
-                value={FIRE_KEY.OFF}
-                checked={this.state.cabin.fireKeyPosition == "OFF"}
-                onChange={() => this.changeKeyPosition(FIRE_KEY.OFF)}
-              />
-            </label>
-            <label htmlFor="firekey">
-              RESET
-              <input
-                name="firekey"
-                type="radio"
-                value={FIRE_KEY.RESET}
-                checked={this.state.cabin.fireKeyPosition === "RESET"}
-                onChange={() => this.changeKeyPosition(FIRE_KEY.RESET)}
-              />
-            </label>
-          </div>
-          <ul style={listStyle}>
-            <li>
-              <button
-                onClick={() =>
-                  this.props.listeners.onCabinRequest(this.commands, 0)
-                }
-              >
-                {" "}
-                Cabin Floor 0 button
-              </button>
-            </li>
-            <li>
-              <button
-                onClick={() =>
-                  this.props.listeners.onCabinRequest(this.commands, 1)
-                }
-              >
-                {" "}
-                Cabin Floor 1 button
-              </button>
-            </li>
-            <li>
-              <button
-                onClick={() =>
-                  this.props.listeners.onCabinRequest(this.commands, 2)
-                }
-              >
-                {" "}
-                Cabin Floor 2 button
-              </button>
-            </li>
-            <li>
-              <button
-                onClick={() =>
-                  this.props.listeners.onCabinRequest(this.commands, 3)
-                }
-              >
-                {" "}
-                Cabin Floor 3 button
-              </button>
-            </li>
-            <li>
-              <button
-                onClick={() =>
-                  this.props.listeners.onCabinRequest(this.commands, 4)
-                }
-              >
-                {" "}
-                Cabin Floor 4 button
-              </button>
-            </li>
-          </ul>
-        </div>
-        <div>
-          <h2>General</h2>
-          <div>Floor: {this.state.floor}</div>
-        </div>
-        <div>
-          <h2>Cabin</h2>
-          <div>Floor indicator: {this.state.cabin.floor}</div>
-          <div>Doors: {this.state.cabin.doorsOpen ? "OPEN" : "CLOSED"}</div>
-          <div>Fire key position: {this.state.cabin.fireKeyPosition}</div>
-          <div>Direction Indicator ^: {this.state.cabin.up ? "ON" : "OFF"}</div>
-          <div>
-            Direction Indicator v: {this.state.cabin.down ? "ON" : "OFF"}
-          </div>
-          <h3>Buttons</h3>
-          <div>
-            {this.state.cabin.buttons.map(({ lightOn }, index) => (
-              <div key={index}>
-                {index}: {lightOn ? "ON" : "OFF"}
-              </div>
-            ))}
-          </div>
-        </div>
-        <div>
-          <h2>Outside</h2>
-          <div>
-            {R.range(0, numFloors).map(floor => (
-              <div key={floor}>
-                <h3>Floor {floor}</h3>
-                <div>Floor indicator: {this.state.outside[floor].floor}</div>
-                <div>
-                  Doors open:{" "}
-                  {this.state.outside[floor].doorsOpen ? "OPEN" : "CLOSED"}
-                </div>
-                <div>
-                  Button Up: {this.state.outside[floor].upButton ? "ON" : "OFF"}
-                </div>
-                <div>
-                  Button Down:{" "}
-                  {this.state.outside[floor].downButton ? "ON" : "OFF"}
-                </div>
-                <div>
-                  Direction Indicator ^:{" "}
-                  {this.state.outside[floor].up ? "ON" : "OFF"}
-                </div>
-                <div>
-                  Direction Indicator v:{" "}
-                  {this.state.outside[floor].down ? "ON" : "OFF"}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+          </Column>
+          <Column padding={32} wrap>
+              <Cell>
+                  <h2>Override Events</h2>
+                  <button
+                    onClick={() =>
+                      this.props.listeners.onFireAlarm(this.commands, this.state.floor)
+                    }
+                  >
+                      Simulate Fire Alarm
+                  </button>
+                  <button
+                    onClick={() =>
+                      this.props.listeners.onDoorOpenRequest(this.commands)
+                    }
+                  >
+                      Open cabin doors (cabin button)
+                  </button>
+                  <button
+                    onClick={() =>
+                      this.props.listeners.onDoorCloseRequest(this.commands)
+                    }
+                  >
+                      Close cabin doors (cabin button)
+                  </button>
+                  <div>
+                      <h2>Fire Key</h2>
+                      <label htmlFor="firekey">
+                          ON
+                          <input
+                            name="firekey"
+                            type="radio"
+                            value={FIRE_KEY.ON}
+                            checked={this.state.cabin.fireKeyPosition == "ON"}
+                            onChange={() => this.changeKeyPosition(FIRE_KEY.ON)}
+                          />
+                      </label>
+                      <label htmlFor="firekey">
+                          OFF
+                          <input
+                            name="firekey"
+                            type="radio"
+                            value={FIRE_KEY.OFF}
+                            checked={this.state.cabin.fireKeyPosition == "OFF"}
+                            onChange={() => this.changeKeyPosition(FIRE_KEY.OFF)}
+                          />
+                      </label>
+                      <label htmlFor="firekey">
+                          RESET
+                          <input
+                            name="firekey"
+                            type="radio"
+                            value={FIRE_KEY.RESET}
+                            checked={this.state.cabin.fireKeyPosition === "RESET"}
+                            onChange={() => this.changeKeyPosition(FIRE_KEY.RESET)}
+                          />
+                      </label>
+                  </div>
+                  <CabinButtons>
+                      {R.reverse(R.range(0, 5)).map(floor => (
+                        <CabinButton onClick={() =>
+                          this.props.listeners.onCabinRequest(this.commands, floor)
+                        }
+                        on={this.state.cabin.buttons[floor].lightOn}
+                        >
+                            {floor}
+                        </CabinButton>
+                      ))}
+                  </CabinButtons>
+              </Cell>
+              <Cell>
+                  <h2>General</h2>
+                  <div>Floor: {this.state.floor}</div>
+
+                  <h2>Cabin</h2>
+                  <div>Floor indicator: {this.state.cabin.floor}</div>
+                  <div>Doors: {this.state.cabin.doorsOpen ? "OPEN" : "CLOSED"}</div>
+                  <div>Fire key position: {this.state.cabin.fireKeyPosition}</div>
+                  <div>Direction Indicator ^: {this.state.cabin.up ? "ON" : "OFF"}</div>
+                  <div>
+                      Direction Indicator v: {this.state.cabin.down ? "ON" : "OFF"}
+                  </div>
+                  <h3>Buttons</h3>
+                  <div>
+                      {this.state.cabin.buttons.map(({ lightOn }, index) => (
+                        <div key={index}>
+                            {index}: {lightOn ? "ON" : "OFF"}
+                        </div>
+                      ))}
+                  </div>
+              </Cell>
+              <Cell>
+                  <h2>Outside</h2>
+                  <div>
+                      {R.reverse(R.range(0, numFloors)).map(floor => (
+                        <div key={floor}>
+                            <h3>Floor {floor}</h3>
+                            <div>Floor indicator: {this.state.outside[floor].floor}</div>
+                            <div>
+                                Doors open:{" "}
+                                {this.state.outside[floor].doorsOpen ? "OPEN" : "CLOSED"}
+                            </div>
+                            <div>
+                                Button Up: {this.state.outside[floor].upButton ? "ON" : "OFF"}
+                            </div>
+                            <div>
+                                Button Down:{" "}
+                                {this.state.outside[floor].downButton ? "ON" : "OFF"}
+                            </div>
+                            <div>
+                                Direction Indicator ^:{" "}
+                                {this.state.outside[floor].up ? "ON" : "OFF"}
+                            </div>
+                            <div>
+                                Direction Indicator v:{" "}
+                                {this.state.outside[floor].down ? "ON" : "OFF"}
+                            </div>
+                        </div>
+                      ))}
+                  </div>
+              </Cell>
+          </Column>
+      </Container>
     );
   }
 }
