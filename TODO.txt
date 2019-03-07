@@ -1,5 +1,6 @@
 Bugs
-When arriving to a floor, both outside buttons are cleared instead of the appropriate one.
+When arriving to a floor, both outside buttons are cleared instead of the appropriate one. (This is a FEATURE, since there is only one elevator, this is more efficient.)
+Outside button lights stay on in emergency mode.
 
 Suggested improvements
 Remove outside down button on Floor 0
