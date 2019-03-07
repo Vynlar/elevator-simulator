@@ -1,8 +1,8 @@
-# TODO
-* refactor to fix concurrency problems
-* make a random simulator
-* implement the entire controller logic
-* make a pretty UI [adrian]
+# Elevator Control System
+Brandon Wade, Adrian Aleixandre, Anthony Galczak, Tristin Glunt, Liam Frye-Mason
+
+# Technical Resources
+Sections below this are intended for developers working on this repo:
 
 ## Elevator internal state:
 * Floor position
