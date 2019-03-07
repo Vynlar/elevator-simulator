@@ -1,0 +1,18 @@
+Bugs
+When arriving to a floor, both outside buttons are cleared instead of the appropriate one.
+
+Suggested improvements
+Remove outside down button on Floor 0
+Remove outside up button on Floor 4
+Give some visual indication (similar to Doors: OPEN, etc.) that the fire alarm is engaged.
+Give some visual indication of the fire alarm timer
+
+
+Mandatory tasks:
+Implement cabin floor travel in emergency mode.
+
+
+
+
+
+
