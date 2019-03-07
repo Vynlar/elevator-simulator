@@ -65,6 +65,20 @@ export default class Controller extends Component {
         () => this.setState({ isEmergency: false })
       );
 
+      for (let i = 0; i < numFloors; i++) {
+        commands.setOutsideButtonLights(() => {
+          return {
+            floor: i,
+            up: false,
+            down: false
+          };
+        });
+        commands.setCabinRequestButtonLight(state => ({
+          floor: i,
+          value: false
+        }));
+      }
+
       // execute initial routine service
       // if on first floor, just open doors
       if (currentElevatorFloor === 0) {
